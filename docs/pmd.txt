@@ -1,0 +1,141 @@
+=======================================
+                 Header
+=======================================
+
+0x0000         Version (1b)
+0x0001         Offset (relative to version, = +1) FM1 Sequence Data (1h)
+0x0003         Offset FM2 Sequence Data (1h)
+0x0005         Offset FM3 Sequence Data (1h)
+0x0007         Offset FM4 Sequence Data (1h)
+0x0009         Offset FM5 Sequence Data (1h)
+0x000A         Offset FM6 Sequence Data (1h)
+0x000C         Offset SSG1 Sequence Data (1h)
+0x000E         Offset SSG1 Sequence Data (1h)
+0x0011         Offset SSG1 Sequence Data (1h)
+0x0013         Offset ADPCM Sequence Data (1h)
+0x0015         Offset Rhythm Sequence Data (1h)
+0x0017         Offset Rhythm Pattern Data (1h)
+0x0019         Offset Instrument Data (1h)
+
+
+=======================================
+    Sequence Data Section Commands
+=======================================
+
+FF   XX                - @ XX
+FE   XX                - q XX
+FD   XX                - V XX
+
+not fully verified / missing clarity:
+(
+FC   FF   XX           - set ticks/quarter to XX
+FC   FE   XX           - add tempo XX
+FC   FD   XX           - add ticks/quarter XX
+FC   XX                - set TimerB value to XX
+)
+
+FB                     - &
+FA XXXX                - D XXXX (signed: 0x0001 = 1, 0xFFFF = -1)
+F9 XXXX                - [ (XXXX: absolute pointer (no offset from version) to corresponding ])
+F8   XX   YY   ZZZZ    - ]XX (YY: "space for loop counter"?, ZZZZ: absolute pointer to corresponding [)
+F7 XXXX                - : (XXXX: absolute pointer to corresponding ])
+F6                     - L (Start of Master Loop, inserted at start if not specified in MML file)
+F5   XX                - _ XX
+F4                     - (
+F3                     - )
+F2   XX   YY   ZZ   WW - M XX,YY,ZZ,WW
+F1   XX                - *XX
+F0   XX   YY   ZZ   WW - E XX,YY,ZZ,WW
+EC   XX                - p XX
+E8   XX                - \V XX
+E7   XX                - __ XX (signed)
+E6   XX                - \V+ XX (signed)
+E3   XX                - )% XX
+E2   XX                - (% XX
+DA   XX   YY   ZZ      - { XX YY }ZZ (XX, YY: resolved as note+octave, see section Notes)
+D6   XX   YY           - MD XX,YY (third argument to MD = expanded to own command B7)
+CC   XX                - set Extend Mode Bit 0 (according to ValeyBell's documentation)
+CB   XX                - MW XX
+CA   XX                - set Extend Mode Bit 1 (according to ValeyBell's documentation)
+C1                     - &&
+
+not fully verified / missing clarity:
+(
+C0   FE   XX           - #Volumedown F+XX (signed?)
+C0   FC   XX           - #Volumedown S+XX (signed?)
+C0   F8   XX           - #Volumedown R+XX (signed?)
+C0   F7   XX           - #Volumedown P+XX (signed?)
+)
+
+BB   XX                - set Extend Mode Bit 5 (according to ValeyBell's documentation)
+B7   XX                - meta-command?, see command D6. sets count
+80                     - End Master Loop, == end of sequence?
+
+Notes:
+
+XF   YY                - r%YY (X: any. purpose of X!=0?)
+XY   ZZ                - (octave+note)%ZZ (X: octave = X+1, Y: note = {c,c#,d,…,a,a#,b}[Y]. e.g. 0x35: o4 f)
+
+
+=======================================
+ Rhythm Sequence Data Section Commands
+=======================================
+
+not fully verified / missing clarity:
+(
+00-7F -> XX             - R XX (PMDMML_MAN: 0-255. rest?)
+80-FF -> XX             - Sequence Data Section Commands [XX]
+)
+
+
+=======================================
+       Rhythm Pattern Data Section
+=======================================
+
+offset table:
+R0 -> XXXX
+R1 -> YYYY
+etc
+
+not fully verified / missing clarity:
+(
+FF                      - Pattern over, return
+80-BF -> XX  YY   ZZ    - Play samples for %ZZ (format: (XXYY AND 3FFF) -> @
+                          e.g. 80 82 -> 8082 AND 3FFF -> 82 hex -> 130 dec
+                               @130 = @128 + @2 -> Hi-Hat Close + Snare Drum 1
+0F   XX                 - r%XX
+)
+
+section end:
+8b                      - unknown purpose
+1h                      - offset to extra data table
+1b                      - extra data type
+FE
+
+=======================================
+    Instrument Definition Section
+=======================================
+
+1b      - @ XX
+25b     - raw register data, see YM2608 manual, 2-2-2: Parameters and channel registers: $30-$B6
+          order: DT/MULTI, TL, KS/AR, AM/DR, SR, SL/RR, FB/Algorithm
+          OP order: 1->3->2->4 !
+
+section end:
+00 FF
+
+
+=======================================
+       Extra Data Table Section
+=======================================
+
+1h                      - offset PPZ filename string (\0-terminated)
+1h                      - offset PPS filename string
+1h                      - offset PPC/P86 filename string
+1h                      - offset title string
+1h                      - offset composer string
+1h                      - offset arranger string
+[
+1h                      - Memo
+]x?
+0000

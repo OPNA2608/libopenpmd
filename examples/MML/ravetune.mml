@@ -1,0 +1,252 @@
+#Title      Rave Dancetune
+#Composer   Tommy Tallarico
+#Arranger   オップナー2608
+#Memo       helo dis is mi 1st released cover ples liek
+#Memo       kek
+#Option     /v/c
+#Filename   .M2
+#Tempo      62
+
+;PPS ""borrowed"" from Virgin Angel
+#PPSFile VA_PPS.PPS
+
+
+;;; Patches & Setup
+
+;; Fake Main
+;  Grounseed - Gs_24.M - @020
+; NM  AG  FB
+@020   4   7
+; AR  DR  SR  RR  SL  TL  KS  ML  DT AMS
+  31   0   0   0   0  23   0   2   0   0
+  31   0   0  10   0   0   0   4   7   0
+  31  28   0   0   5  20   0   8   7   0
+  31  15   3  11   1   0   0   2   3   0
+
+;; Better Main?
+;  Rusty - BOSS.M - @106 (->@107)
+; NM  AG  FB
+@107   0   5
+; AR  DR  SR  RR  SL  TL  KS  ML  DT AMS
+  31   0   0   0   0   0   0   1   7   0
+  31  14   0   7   2  32   0   4   3   0
+  23  18   0   6   1  16   0   0   3   0
+  31  11   0   7   1   0   0   2   7   0
+  
+;; Fake Bass
+;  Grounseed - Gs_17.M - @017
+; NM  AG  FB
+@017   2   7
+; AR  DR  SR  RR  SL  TL  KS  ML  DT AMS
+  31  15   7   8   2  30   0   0   6   0
+  20  16   6   7   4  18   1   7   6   0
+  31   5   6   7   1  48   0   0   6   0
+  31  13   7   7   5   0   0   1   6   0
+  
+;; Better Bass (Metal)
+;  Virgin Angel - VA_M10.M - @206
+; NM  AG  FB
+@206   0   7
+; AR  DR  SR  RR  SL  TL  KS  ML  DT AMS
+  16  22   0   0   3  21   0   1   7   0
+  17  25   0   4   0   9   0   1   7   0
+  17   0   0   5   0  11   0   3   3   0
+  16  14   5   8   3   0   0   1   0   0
+
+;; ""Bae"" Metal
+;  Virgin Angel - VA_M01.M - @106
+; NM  AG  FB
+@106   2   7
+; AR  DR  SR  RR  SL  TL  KS  ML  DT AMS
+  20   1   1   4   5  14   1   1   7   0
+  31   1   1   4   2  30   1   1   7   0
+  18   2   1   4   2  15   0   1   3   0
+  31   1  31   6  10   0   2   4   0   0
+
+;; Minor Metal
+;  Grounseed - Gs_23.M2 - @018
+; NM  AG  FB
+@018   1   5
+; AR  DR  SR  RR  SL  TL  KS  ML  DT AMS
+  31  15   0   1   0   0   0   1   7   0
+  31  11   0   9   3  40   0   4   3   0
+  31   0   0   0   0  20   0   1   7   0
+  31   0   0   7   0   0   0   2   3   0
+  
+;; ""Cowbell""
+;  some MUCOM88 module
+;  https://www.youtube.com/watch?v=VzV3sWJRt5k
+; NM  AG  FB
+@007   7   3
+; AR  DR  SR  RR  SL  TL  KS  ML  DT AMS
+  31  21  19   6   2   0   0  15   2   0
+  31  21  12   6   2  35   0   8   2   0
+  31  21  13   6   3  28   0   7   3   0
+  31  19  16   9   2   0   0   2   3   0
+
+;; iunno lol
+;  Trouble Outsiders - OS_03.M2 - @072
+; NM  AG  FB
+@072   5   7
+; AR  DR  SR  RR  SL  TL  KS  ML  DT AMS
+  20  10   0  11   3  24   0   1   0   0
+  31  12   9  11   1   0   0   1   7   0
+  31  12   9  11   1   0   0   1   0   0
+  31  12   9  11   1   0   0   1   0   0
+
+!vibratorOn  MA0,1,6,2 MW5 *1
+!vibratorOff MA0,0,0,0 MW0 *1
+  
+ABCD    o2 l8  @020 |ABC V106 |D V110
+E       o3 l16 @017 V118
+K       \V60 v0
+
+
+;;; Music Data
+
+;; Rhythms
+
+;  Silence
+R0      r1
+
+;  Start
+R1       l4 @1 ccc[c8]2
+R2       l4 @1 cc l16 c @194 ccr c8cc
+R3      l16 @1 c4 @194 c8.c @1 c @194 c[c8]3
+R4      l16 @1 c4 @194 c8.c @1 c @194 c[c8]2 @1 c8
+
+;  Transition
+R5      l16 [@1 c @128 [c]3 \V-1]3 [@1 c @128 c \V-1]2
+R6      l16 [@1 c @128 [c]3 \V-1]4
+R7      l16 @128 [c]4 v2 \V+1 [c]4 v4 \V+1 [c]4 v6 \V+1 [c]4 v8 \V+1
+R8      l16 @128 [c]3 v9 \V+1 [c]3 v10 \V+1 [c]3 v11 \V+1 @9 [c]4 @384 c @9 c @384 c v14
+
+;  REAL MEAT YO
+R9       l8 @1 [c]2 @130 c.cc16 @1 c @130 c @1 c
+R10      l8 @1 [c]2 @130 c.c l16 [c]3 [@1 c @130 c]2
+R11      l8 @1 [c]2 @130 c.c l16 [c]3 @1 c @130 c @1 [c]2
+
+;  Cooldown
+R12      l16 [@1025 [c]4 @130 c8 @1025 [c]2]2
+R13      l16  @1025 [c]4 @130 c8 @1025 [c]2 @130 [c]2 c8 @2560 c4
+
+;  SSGPCM Start
+R14      l8 @1 c. @2 c16 [@1 c @2 c]3
+R15      l16 @1 c4 @130 c8.c @1 c @130 c[c8]3
+R16      l16 @1 c4 @130 c8.c @1 c @130 c[c8]2 @1 c8
+
+;  SSGPCM Transition
+R17      l16 [@1 c @2560 [c]3]3 [@1 c @2560 c]2
+R18      l16 [@1 c @2560 [c]3]4
+R19      l1 r
+R20      l16 @2560 [r]3 [r]3 [r]3 @1 [c]4 @130 c @1 c @130 c
+
+;; Rhythms Done
+
+
+;; Music
+
+;  Swooping Intro
+ABC     |B __+4 |C __+7 |ABC c&{c>>c}1&{c>>>c}2.. _0
+DE      [r1]2
+K       [R0]2
+
+
+;  Start
+AB      o4
+A       [[fr16>cr16<a+r16g+r16 a+16r16>c16r16< : fr16>cr16<a+r16g+r16 a+16r16g+16r16]2 >cr16<a+r16g+16r16 a+r16g+r16d+16r16]4
+B       [[cr16 [fr16]3         [f16r16]2]3                                            [[fr16]2 : f16r16]2 c16r16]4
+
+CD      o2 l1 |D <
+CD      [fg+a+> c4.c+4.d+4]3
+D       <
+CD       fg+a+> c4.c+4.d+4
+
+E       [r1]8
+E       [[f]16 [g+]16 [a+]16 __+12 [c]6 [c+]6 [d+]4]2
+
+K       [R0]4 [R1]3 R2 [R3R4]4
+
+
+;  Transition
+A       [[fr16 d+r16]2 f16r16 d+16r16]4
+B       [[cr16]4      [c16r16]2]4
+
+C       o6 l16 V118 @007
+C       [r8c [r4c]2 cr8]2 [r8c (% [r4c(%]2 cr8(%]2
+D       [r1]3
+F       [r1]21
+DF      o2 l1 V106 @020 |D __+4 |F __+7
+DF      {f>>>f}2&16 @107 V122 !vibratorOn {f<<<f}4.. !vibratorOff _0
+
+E       [[f]4 (%]4 [[f]2 (%2]4 [f (%2]7 f& )%3
+E       << @206 [f )%]32 _0
+
+K       \V58 R5R6R7R8
+
+
+;  Let's get this Beat
+AB      @072 l16 V114 o6 |B ( r16
+AB      [[[fcgcg+cg a+& !vibratorOn a+ !vibratorOff cg+cgcfc]2 : __-2]2 _0
+AB      [g+c+f+c+fc+d+ f+& !vibratorOn f+ !vibratorOff c+fc+d+[c+]3]2
+AB      [gcfcecf : e& !vibratorOn e !vibratorOff cfce[c]3]2 c& !vibratorOn c8. !vibratorOff c+& !vibratorOn : c+8 !vibratorOff d+& !vibratorOn d+ !vibratorOff]2 |A c+8 |B c+ |AB &{c+<<c+}8 !vibratorOff
+
+DEF     o4 l16 V118 |EF (< |D @107 |E @018 |F @106
+DEF     [[[[f]2 (%3f r)%3 !vibratorOn )%2f8(%2  !vibratorOff d+ !vibratorOn )%2f8.& ( f8& (2 f8& (3 f8(%2 !vibratorOff [)2]3]2 : __-2]2 _0
+DEF      [[c+]2 (%3c+r)%3 !vibratorOn )%2c+8(%2 !vibratorOff c !vibratorOn )%2c+8.& ( c+8& (2 c+8& (3 c+8(%2 !vibratorOff [)2]3]2
+DEF      [[c]2  (%3c r)%3 !vibratorOn )%2c8(%2  !vibratorOff <a+:> !vibratorOn )%2c8.& ( c8& (2 c8& (3 c8(%2 !vibratorOff [)2]3]2 a+ !vibratorOn c&  !vibratorOff c8 !vibratorOn c+&  : !vibratorOff c+8 !vibratorOn d+&  !vibratorOff d+]2 c+8 &{c+<<c+}8 !vibratorOff
+
+K        [[R9]7 : R10]2 R11
+
+
+;  Bridge to cool down
+ABDEF    [r1]2
+K        R12 R13
+
+
+;; LOOP
+ABDEFK  L
+;; LOOP
+
+
+;  ""Fixed"" Start
+AB      l8 @020 o3 V114 |B <)
+AB      [[f16& !vibratorOn f> !vibratorOff c16r<    a+16& !vibratorOn a+. !vibratorOff g+a+>c< :
+AB        f16& !vibratorOn f> !vibratorOff c16r<    a+16& !vibratorOn a+. !vibratorOff g+a+g+]2
+AB      :>c16& !vibratorOn c< !vibratorOff a+16r g+ a+16& !vibratorOn a+  !vibratorOff g+16r d+]2
+AB    (% >c16& !vibratorOn c< !vibratorOff (% a+16r (% g+ (% a+16& !vibratorOn a+  !vibratorOff (% g+16r (% d+ V114 |B )
+
+DEF     o3 V102 |EF (<
+;DEF     [r1]4
+DEF     [[f]16 [g+]16 )%2 [a+]16 __+12 )%2 [c]6 [c+]6 : )%4 [d+]4]2 _0 )%4 {>>d+<<f}4 (%2
+
+K       v10 [R14]4 v13 [R15R16]2
+
+
+;  ""Fixed"" Transition
+AB     [[f16& !vibratorOn f !vibratorOff d+16r]2
+AB       f16 f16&d+]4
+
+DEF      o3 |EF <
+DE       f1&1&1&
+F        [f]47 f&
+DEF      V114 |DEF {c>>>>c}1 _0
+
+K        v8 R17R18R19 v14 R20 
+
+;  Let's get this Beat, but part of loop now
+AB      @072 l16 V114 o6 |B ( r16
+AB      [[[fcgcg+cg a+& !vibratorOn a+ !vibratorOff cg+cgcfc]2 : __-2]2 _0
+AB      [g+c+f+c+fc+d+ f+& !vibratorOn f+ !vibratorOff c+fc+d+[c+]3]2
+AB      [gcfcecf : e& !vibratorOn e !vibratorOff cfce[c]3]2 c& !vibratorOn c8. !vibratorOff c+& !vibratorOn : c+8 !vibratorOff d+& !vibratorOn d+ !vibratorOff]2 |A c+8 |B c+ |AB &{c+<<c+}8 !vibratorOff
+
+DEF     o4 l16 V118 |EF (< |D @107 |E @018 |F @106
+DEF     [[[[f]2 (%3f r)%3 !vibratorOn )%2f8(%2  !vibratorOff d+ !vibratorOn )%2f8.& ( f8& (2 f8& (3 f8(%2 !vibratorOff [)2]3]2 : __-2]2 _0
+DEF      [[c+]2 (%3c+r)%3 !vibratorOn )%2c+8(%2 !vibratorOff c !vibratorOn )%2c+8.& ( c+8& (2 c+8& (3 c+8(%2 !vibratorOff [)2]3]2
+DEF      [[c]2  (%3c r)%3 !vibratorOn )%2c8(%2  !vibratorOff <a+:> !vibratorOn )%2c8.& ( c8& (2 c8& (3 c8(%2 !vibratorOff [)2]3]2 a+ !vibratorOn c&  !vibratorOff c8 !vibratorOn c+&  : !vibratorOff c+8 !vibratorOn d+&  !vibratorOff d+]2 c+8 &{c+<<c+}8 !vibratorOff
+
+K        [[R9]7 : R10]2 R11
+
+;  Bridge to cool down, but part of loop now
+ABDEF    [r1]2
+K        R12 R13

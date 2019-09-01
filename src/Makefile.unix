@@ -1,0 +1,25 @@
+CC     = gcc
+PROG   = libopenpmd
+
+SRCS   = $(PROG).c common.c opna.c
+OBJS   = $(PROG).o common.o opna.o
+
+CFLAGS = -g -Wall -Wextra -Werror -ansi -pedantic-errors
+
+.PHONY: clean
+
+$(PROG): $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) -o $(PROG)
+
+$(PROG).o: $(PROG).c
+	$(CC) $(CFLAGS) -c $(PROG).c
+
+common.o: common.c
+	$(CC) $(CFLAGS) -c common.c
+
+opna.o: opna.c
+	$(CC) $(CFLAGS) -c opna.c
+
+clean:
+	rm -fv $(OBJS)
+
