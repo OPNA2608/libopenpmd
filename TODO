@@ -1,0 +1,7 @@
+documentation:
+  - figure out version-dependency of fields & section (missing extra data section -> how, when, what versions?)
+  - document special PX version too?
+
+implementation:
+  - keep simple, dumb parser in sync with documented details (no time right now)
+

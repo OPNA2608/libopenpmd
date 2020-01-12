@@ -2,8 +2,16 @@
                  Header
 =======================================
 
-0x0000         Version (1b)
-0x0001         Offset (relative to version, = +1) FM1 Sequence Data (1h)
+(offsets relative to version byte, +0x01)
+
+0x0000         Version (1b) {
+
+  0x00 = PC-98
+  0x02 = IBMPC
+
+}
+
+0x0001         Offset FM1 Sequence Data (1h)
 0x0003         Offset FM2 Sequence Data (1h)
 0x0005         Offset FM3 Sequence Data (1h)
 0x0007         Offset FM4 Sequence Data (1h)
@@ -22,70 +30,238 @@
     Sequence Data Section Commands
 =======================================
 
-FF   XX                - @ XX
-FE   XX                - q XX
-FD   XX                - V XX
+FF   XX                     - @ XX
+                              -> §6.1.1
+FE   XX                     - q XX
+                              -> §4.13
+FD   XX                     - V XX
+                              -> §5.2
+FC   FF   XX                - t XX
+                              -> §11.1
+FC   FE   XX                - T +/- XX (signed)
+                              -> §11.2
+FC   FD   XX                - t +/- XX (signed)
+                              -> §11.1
+FC   XX                     - T XX
+                              -> §11.2
+FB                          - &
+                              -> §4.10
+FA XXXX                     - D XXXX (signed)
+                              -> §7.1
+F9 XXXX                     - [
+                              (XXXX: absolute pointer to corresponding ])
+                              -> §10.1
+F8   XX   YY ZZZZ           - ]XX
+                              (  YY: YY =/= XX -> loop interrupted via :
+                               ZZZZ: absolute pointer to corresponding [)
+                              -> §10.1
+F7 XXXX                     - :
+                              (XXXX: absolute pointer to corresponding ])
+                              -> §10.1
+F6                          - L
+                              -> §10.2
+F5   XX                     - _ XX (signed)
+                              -> §4.14
+F4                          - )
+                              -> §5.5
+F3                          - (
+                              -> §5.5
+F2   XX   YY   ZZ   WW      - MA XX, YY, ZZ (signed), WW
+                              -> §9.1
+F1   XX                     - *A XX
+                              -> §9.3
+F0   XX   YY   ZZ   WW      - E XX, YY (signed), ZZ, WW
+                              -> §8.1
+EF   XX   YY                - y XX, YY
+                              -> §15.1
+EE   XX                     - w XX
+                              -> §6.6
+ED   XX                     - P XX (P0 = 0x00, P1 = 0x07, P2 = 0x38, P3 = 0x3f)
+                              -> §6.5
+EC   XX                     - p XX
+                              -> §13.1
+EB   XX                     - (RSS Shot/Dump Control
+                              bitorder: \b \s \c \h \t \i unused +p)
+                              -> §14.1
+EA   XX                     - (RSS Individual Volume Setting
+                              XX >> 5, meaning of value: unused b s c h t i unused
+                              XX & 0x1F: value)
+                              -> §14.3
+E9   XX                     - (RSS Output Position Setting
+                              XX >> 5: see EA
+                              XX & 0x1F: unused r l m unused unused unused unused)
+                              -> §14.4
+E8   XX                     - \V XX
+                              -> §14.2
+E7   XX                     - __ XX (signed)
+                              -> §4.14
+E6   XX                     - \V +/- XX (signed)
+                              -> §14.2
+E5   XX   YY                - (RSS Individual Volume Setting +/-
+                              XX: see EB
+                              YY = value (signed))
+                              -> §14.3
+E4   XX                     - #D XX
+                              -> §9.13
+E3   XX                     - )% XX
+                              -> §5.5
+E2   XX                     - (% XX
+                              -> §5.5
+E1   XX                     - H (XX & 0x0F), (XX >> 8)
+                              -> §9.10
+E0   XX                     - # ((XX >> 3) & 0x01), (XX & 0x07)
+                              -> §9.11
+DF   XX                     - C XX (#Zenlen XX -> C XX on Channel G)
+                              -> §4.11
+DE   XX                     - )^ XX
+                              -> §5.5
+DD   XX                     - (^ XX
+                              -> §5.5
+DC   XX                     - ~ XX
+                              -> §15.9
+DB   XX                     - ~ +/- XX (signed)
+                              -> §15.9
+DA   XX   YY   ZZ           - { XX YY }%ZZ
+                              (XX, YY: resolved as note+octave - see section Notes)
+                              -> §4.3
+D9   XX                     - #w XX
+                              -> §9.12
+D8   XX                     - (XX < 0x80): #a XX
+                                   (else): #p XX (signed)
+                              -> §9.12
+D7   XX                     - #f XX
+                              -> §9.12
+D6   XX   YY                - MDA XX, YY
+                              (see B7)
+                              -> §9.7
+D5 XXXX                     - DD +/- XXXX
+                              -> §7.1
+D4   XX                     - n XX
+                              -> §15.6
+D3   XX                     - N XX
+                              -> §15.5
+D2   XX                     - F XX
+                              -> §15.3
+D1                          - $$$ UNKNOWN / UNUSED $$$
+D0   XX                     - w XX
+                              -> §6.6
+CF   XX                     - s (XX >> 4)
+                              -> §6.2
+CE YYYY ZZZZ WWWW           - @ $$, YYYY (signed), ZZZZ (signed), WWWW (signed)
+                              (see FF, PCM Channels Case of @. follows FF)
+                              -> §6.1.5
+CD   XX   YY   ZZ   WW   VV - E XX, YY, ZZ, (WW & 0x0F), (WW >> 4), VV
+                              -> §8.1
+CC   XX                     - DX XX
+                              (#Detune Extend adds this to G-I)
+                              -> §7.3
+CB   XX                     - MWA XX
+                              -> §9.2
+CA   XX                     - MXA XX
+                              (#LFOSpeed adds this to every channels sans K)
+                              -> §9.5
+C9   XX                     - EX XX
+                              -> §8.2
+C8   XX YYYY                - sd XX, YYYY (signed)
+                              -> §7.2
+C7   XX YYYY                - sdd XX, YYYY (signed)
+                              -> §7.2
+C6 XXXX YYYY ZZZZ           - #FM3Extend
+                              (XXXX to ZZZZ: offsets of sequence data for extension channels, 0x0000 = none.
+                               occurs at start of A)
+                              -> §2.20
+C5   XX                     - MMA XX
+                              -> §9.4
+C4   XX                     - (~XX % 32 == 0): Q (~XX >> 5)
+                                       (else): Q% (~XX)
+                              -> 4.12
+C3   XX   YY                - px XX (signed), YY
+                              -> §13.2
+C2   XX                     - MA XX
+                              -> §9.1
+C1                          - &&
+                              -> §4.10
+C0   FF   XX                - DF XX
+                              -> §15.4
+C0   FE   XX                - DF +/- XX (signed)
+                              -> §15.4
+C0   FD   XX                - DS XX
+                              -> §15.4
+C0   FC   XX                - DS +/- XX (signed)
+                              -> §15.4
+C0   FB   XX                - DP XX
+                              -> §15.4
+C0   FA   XX                - DP +/- XX (signed)
+                              -> §15.4
+C0   F9   XX                - DR XX
+                              -> §15.4
+C0   F8   XX                - DR +/- XX (signed)
+                              -> §15.4
+C0   F7   XX                - A XX
+                              -> §15.10
+C0   XX                     - m XX
+                              -> §15.7
+BF   XX   YY   ZZ   WW      - MB XX, YY, ZZ, WW
+                              -> §9.1
+BE   XX                     - *B XX
+                              -> §9.3
+BD   XX   YY   B7   ZZ      - MDB XX, YY (signed), ZZ
+                              -> §9.7
+BD   XX   YY                - MDB XX, YY (signed)
+                              -> §9.7
+BC   XX                     - MWB XX
+                              -> §9.2
+BB   XX                     - MXB XX
+                              (#LFOSpeed adds this to every channels sans K)
+                              -> §9.5
+BA   XX                     - MMB XX
+                              -> §9.4
+B9   XX                     - MB XX
+                              -> §9.1
+B8   XX   YY                - (high nibble 0xF): O XX, YY (signed)
+                                         (else): O XX, YY
+                              -> §6.3
+B7   XX                     - MDA $$, $$, XX
+                              (see D6, number3 part of command)
+                              -> §9.7
+B6   XX                     - (XX < 0x80): FB XX
+                                   (else): FB +/- XX (signed, 0x80 = +0, 0xFF = -1)
+                              -> §6.4
+B5   XX   YY                - sk XX, YY
+                              -> §12.3
+B4 XXXX YYYY ZZZZ WWWW
+   VVVV UUUU TTTT SSSS      - #PPZExtend
+                              (XXXX to SSSS: offsets of sequence data for PPZ channels, 0x0000 = none.
+                               occurs at start of J)
+                              -> §2.25
+B3   XX                     - q $$-XX
+                              (see FE, number2 part of command)
+                              -> §4.13
+B2   XX                     - _M XX (signed)
+                              -> §4.16
+B1   XX                     - q $$-$$, XX
+                              (see FE & B3, number3 part of command)
+                              -> §4.13
+80                          - (End Track)
 
-not fully verified / missing clarity:
-(
-FC   FF   XX           - set ticks/quarter to XX
-FC   FE   XX           - add tempo XX
-FC   FD   XX           - add ticks/quarter XX
-FC   XX                - set TimerB value to XX
-)
+Notes (0x00 - 0x7F) {
 
-FB                     - &
-FA XXXX                - D XXXX (signed: 0x0001 = 1, 0xFFFF = -1)
-F9 XXXX                - [ (XXXX: absolute pointer (no offset from version) to corresponding ])
-F8   XX   YY   ZZZZ    - ]XX (YY: "space for loop counter"?, ZZZZ: absolute pointer to corresponding [)
-F7 XXXX                - : (XXXX: absolute pointer to corresponding ])
-F6                     - L (Start of Master Loop, inserted at start if not specified in MML file)
-F5   XX                - _ XX
-F4                     - (
-F3                     - )
-F2   XX   YY   ZZ   WW - M XX,YY,ZZ,WW
-F1   XX                - *XX
-F0   XX   YY   ZZ   WW - E XX,YY,ZZ,WW
-EC   XX                - p XX
-E8   XX                - \V XX
-E7   XX                - __ XX (signed)
-E6   XX                - \V+ XX (signed)
-E3   XX                - )% XX
-E2   XX                - (% XX
-DA   XX   YY   ZZ      - { XX YY }ZZ (XX, YY: resolved as note+octave, see section Notes)
-D6   XX   YY           - MD XX,YY (third argument to MD = expanded to own command B7)
-CC   XX                - set Extend Mode Bit 0 (according to ValeyBell's documentation)
-CB   XX                - MW XX
-CA   XX                - set Extend Mode Bit 1 (according to ValeyBell's documentation)
-C1                     - &&
+XF   YY                     - r%YY (X: 0-7 legal, only 0 possible)
+XY   ZZ                     - (octave+note)%ZZ (X: octave = X+1, Y: note = {c,c#,d,…,a,a#,b}[Y]. e.g. 0x35: o4 f)
 
-not fully verified / missing clarity:
-(
-C0   FE   XX           - #Volumedown F+XX (signed?)
-C0   FC   XX           - #Volumedown S+XX (signed?)
-C0   F8   XX           - #Volumedown R+XX (signed?)
-C0   F7   XX           - #Volumedown P+XX (signed?)
-)
-
-BB   XX                - set Extend Mode Bit 5 (according to ValeyBell's documentation)
-B7   XX                - meta-command?, see command D6. sets count
-80                     - End Master Loop, == end of sequence?
-
-Notes:
-
-XF   YY                - r%YY (X: any. purpose of X!=0?)
-XY   ZZ                - (octave+note)%ZZ (X: octave = X+1, Y: note = {c,c#,d,…,a,a#,b}[Y]. e.g. 0x35: o4 f)
+}
 
 
 =======================================
  Rhythm Sequence Data Section Commands
 =======================================
 
-not fully verified / missing clarity:
-(
-00-7F -> XX             - R XX (PMDMML_MAN: 0-255. rest?)
-80-FF -> XX             - Sequence Data Section Commands [XX]
-)
+not fully verified / missing clarity {
+
+00-7F -> XX                 - R XX (PMDMML_MAN: 0-255)
+80-FF -> XX                 - Sequence Data Section Commands [XX]
+
+}
 
 
 =======================================
@@ -97,45 +273,73 @@ R0 -> XXXX
 R1 -> YYYY
 etc
 
-not fully verified / missing clarity:
-(
-FF                      - Pattern over, return
-80-BF -> XX  YY   ZZ    - Play samples for %ZZ (format: (XXYY AND 3FFF) -> @
-                          e.g. 80 82 -> 8082 AND 3FFF -> 82 hex -> 130 dec
-                               @130 = @128 + @2 -> Hi-Hat Close + Snare Drum 1
-0F   XX                 - r%XX
-)
+not fully verified / missing clarity {
 
-section end:
-8b                      - unknown purpose
-1h                      - offset to extra data table
-1b                      - extra data type
+FF                          - Pattern over, return
+80-BF -> XX  YY   ZZ        - Play samples for %ZZ (format: (XXYY AND 3FFF) -> @
+                              e.g. 80 82 -> 8082 AND 3FFF -> 82 hex -> 130 dec
+                                   @130 = @128 + @2 -> Hi-Hat Close + Snare Drum 1
+0F   XX                     - r%XX
+
+}
+
+
+version-dependent / not guaranteed to exist {
+
+4b                          - song length (including pre-Master Loop)
+4b                          - loop length (only Master Loop Start - End)
+1h                          - offset to extra data table
+1b                          - extra data type
 FE
+
+}
+
 
 =======================================
     Instrument Definition Section
 =======================================
 
-1b      - @ XX
-25b     - raw register data, see YM2608 manual, 2-2-2: Parameters and channel registers: $30-$B6
-          order: DT/MULTI, TL, KS/AR, AM/DR, SR, SL/RR, FB/Algorithm
-          OP order: 1->3->2->4 !
+1b                          - @ XX
+25b                         - raw register data, see YM2608 manual, 2-2-2: Parameters and channel registers: $30-$B6
+                              order: DT/MULTI, TL, KS/AR, AM/DR, SR, SL/RR, FB/Algorithm
+                              OP order: 1->3->2->4 !
+
+version-dependent / not guaranteed to exist (missing if FE subsection in previous section is missing) {
 
 section end:
 00 FF
+
+}
 
 
 =======================================
        Extra Data Table Section
 =======================================
 
-1h                      - offset PPZ filename string (\0-terminated)
-1h                      - offset PPS filename string
-1h                      - offset PPC/P86 filename string
-1h                      - offset title string
-1h                      - offset composer string
-1h                      - offset arranger string
-[
-1h                      - Memo
-]x?
-0000
+(all strings are NUL-terminated)
+
+V4.8+ {
+
+1h                          - offset PPZ filename string
+
+}
+
+V4.3+ {
+
+1h                          - offset PPS filename strings (2 filenames: seperator 0xFE)
+
+}
+
+1h                          - offset PPC/P86 filename string
+1h                          - offset title string
+1h                          - offset composer string
+1h                          - offset arranger string
+
+[0 .. 128] {
+
+1h                          - Memo
+
+}
+
+section end:
+0x0000

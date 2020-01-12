@@ -511,12 +511,12 @@ unsigned char pmdReadRhythmSubroutineCommand (FILE* pmdFile) {
         printf ("command 0x%02X   0x%02X 0x%02X             - play ", /*(command * 0x100 + bb) & 0x3FFF, length: %hu\n", */
           cmd[0], arg[0], arg[1]
         );
-        for (bitCounter=0; bitCounter<8; bitCounter++) {
+        for (bitCounter=0; bitCounter<8; ++bitCounter) {
           if ((arg[0] >> bitCounter) & 0x01) {
             printf ("[%s] ", rhythmSampleBitMap[bitCounter]);
           }
         }
-        for (bitCounter=0; bitCounter<6; bitCounter++) {
+        for (bitCounter=0; bitCounter<6; ++bitCounter) {
           if ((cmd[0] >> bitCounter) & 0x01) {
             printf ("[%s] ", rhythmSampleBitMap[bitCounter+8]);
           };
@@ -571,7 +571,7 @@ unsigned char pmdReadInstrumentSection (FILE* pmdFile) {
 
   if (result) {
     printf ("Instrument ID: %hu\n", dataID);
-    for (i=0; i<25; i++) {
+    for (i=0; i<25; ++i) {
       result = fileReadBytes (pmdFile, 1, &dataValue);
       if (result) {
         printf ("Instrument Data[%02hu]: %hu%hu%hu%hu%hu%hu%hu%hu\n", i,
@@ -669,7 +669,7 @@ unsigned char pmdReadRhythmData (FILE* pmdFile) {
   unsigned char  lookupTableSize = 0;
 
   printf ("Look-up Table\n-------------\n");
-  for (i=0; i<MAXLENGTH_UNKNOWN_BUFFER; i++) {
+  for (i=0; i<MAXLENGTH_UNKNOWN_BUFFER; ++i) {
     result = fileReadShorts (pmdFile, 1, &lookupTable[i]);
     printf ("%02hu -> 0x%04X\n", i, lookupTable[i]);
     if (ftell (pmdFile) > (long int) lookupTable[0] + 1) {
@@ -682,7 +682,7 @@ unsigned char pmdReadRhythmData (FILE* pmdFile) {
   }
 
   if (result) {
-    for (i=0; i<lookupTableSize; i++) {
+    for (i=0; i<lookupTableSize; ++i) {
       /*
        * TODO
        * try parsing the subroutine section with the lookupTable
@@ -727,7 +727,7 @@ unsigned char pmdReadRhythmData (FILE* pmdFile) {
      * ~ 8 mystery bytes ~
      * figure out what they're for? :(
      */
-    for (i=0; i<8; i++) {
+    for (i=0; i<8; ++i) {
       resultReturnRead = fileReadBytes (pmdFile, 1, &bufferReturnRead);
       if (!resultReturnRead) {
         result = 0;
@@ -818,10 +818,10 @@ unsigned char pmdLoad (char* pmdFilename) {
 
     printf ("HEADER\n------\n");
     printf ("VERSION ID\t0x%02x\n", pmdHeader.version);
-    for (i=0; i<=5; i++) {
+    for (i=0; i<=5; ++i) {
       printf ("FM%d    SEQUENCE\t0x%04hX\n", i+1, opnaTrackPointers.FM[i]);
     };
-    for (i=i; i<=8; i++) {
+    for (i=i; i<=8; ++i) {
       printf ("SSG%d   SEQUENCE\t0x%04hX\n", i-5, ((struct_pmdOpnaTrackPointers*) pmdHeader.trackPointers)->SSG[i-6]);
     };
     printf ("ADPCM  SEQUENCE\t0x%04hX\n", ((struct_pmdOpnaTrackPointers*) pmdHeader.trackPointers)->ADPCM);
@@ -832,7 +832,7 @@ unsigned char pmdLoad (char* pmdFilename) {
     /*
     fseek (fp, pmdHeader.trackPointers.FM[0] + 1, SEEK_SET);
     */
-    pmdSection++;
+    ++pmdSection;
     while (ftell (fp) < ((struct_pmdOpnaTrackPointers*) pmdHeader.trackPointers)->FM[1] + 1) {
       pmdReadSequence (fp, pmdSection);
     };
@@ -882,7 +882,7 @@ unsigned char pmdLoad (char* pmdFilename) {
       break;
     };
 
-    pmdSection++;
+    ++pmdSection;
     while (ftell (fp) < ((struct_pmdOpnaTrackPointers*) pmdHeader.trackPointers)->SSG[1] + 1) {
       pmdReadSequence (fp, pmdSection);
     };
@@ -908,7 +908,7 @@ unsigned char pmdLoad (char* pmdFilename) {
       break;
     };
 
-    pmdSection++;
+    ++pmdSection;
     while (ftell (fp) < ((struct_pmdOpnaTrackPointers*) pmdHeader.trackPointers)->Rhythm + 1) {
       pmdReadSequence (fp, pmdSection);
     };
@@ -923,7 +923,7 @@ unsigned char pmdLoad (char* pmdFilename) {
      * CLEAN THIS MESS UP AAAAAAAAAA
      * move all this Rhythm stuff into a more general function
      */
-    pmdSection++;
+    ++pmdSection;
     while (ftell (fp) < ((struct_pmdOpnaTrackPointers*) pmdHeader.trackPointers)->RhythmPatternTablePointer + 1) {
       pmdReadSequence (fp, pmdSection);
     };
@@ -945,7 +945,7 @@ unsigned char pmdLoad (char* pmdFilename) {
        * ~ 8 mystery bytes ~
        * figure out what they're for? :(
        */
-      for (i=0; i<8; i++) {
+      for (i=0; i<8; ++i) {
         pmdReadSuccess = fileReadBytes (fp, 1, &bufferReturnRead);
         if (!pmdReadSuccess) {
           break;
@@ -987,7 +987,7 @@ unsigned char pmdLoad (char* pmdFilename) {
        * TODO
        * pmdReadExtraData (fp);
        */
-      for (i=0; i<256; i++) {
+      for (i=0; i<256; ++i) {
         pmdReadSuccess = fileReadShorts (fp, 1, &extraDataTable[i]);
         if (!pmdReadSuccess) break;
         if (extraDataTable[i] == 0x0000) break;
@@ -1028,7 +1028,7 @@ unsigned char pmdLoad (char* pmdFilename) {
             printf ("Memo: %s\n", extraDataBuffer);
             break;
         };
-        i++;
+        ++i;
       };
     };
 

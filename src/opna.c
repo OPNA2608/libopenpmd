@@ -13,7 +13,7 @@ unsigned char pmdReadOpnaTrackPointers (
   for (i = 0; i < 6; i++) {
     map[i] = &(*opnaTrackPointers).FM[i];
   };
-  for (i = i; i < 9; i++) {
+  for (; i < 9; i++) {
     map[i] = &(*opnaTrackPointers).SSG[i-6];
   };
   map[i++] = &(*opnaTrackPointers).ADPCM;
