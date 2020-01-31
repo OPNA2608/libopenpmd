@@ -1042,7 +1042,7 @@ unsigned char pmdLoad (char* pmdFilename) {
     fclose (fp);
   };
 
-  return pmdReadSuccess;
+  return !pmdReadSuccess;
 }
 
 unsigned char pmdLoadDebug (void) {

@@ -1,0 +1,15 @@
+name: Project CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+    - name: make
+      run:  cd src && make -f Makefile.unix
+    - name: test
+      run:  src/libopenpmd examples/M/PAT1_P.M2
