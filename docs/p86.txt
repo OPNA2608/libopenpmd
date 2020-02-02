@@ -1,0 +1,29 @@
+=======================================
+                 Header
+=======================================
+
+0x0000           Identifier (12b)
+                 "PCM86 DATA(\n)(\0)"
+0x000E           Unknown (4b)
+0x0010 - 0x060F  256 * {
+
+  Pointer to Sample Data Start  (3b)
+  Length of Sample Data         (3b)
+
+  (0x000000 0x000000 -> no sample for this instrument ID)
+
+}
+
+
+=======================================
+                  Body
+=======================================
+
+Stream of Sample Data {
+
+  8-Bit Signed
+  Mono
+  usually 16kHz (any? depends on preferred mapping to notes & octaves)
+
+}
+
