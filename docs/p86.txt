@@ -4,7 +4,9 @@
 
 0x0000           Identifier (12b)
                  "PCM86 DATA(\n)(\0)"
-0x000C           Unknown (4b)
+0x000C           Targeted P86DRV version (1b)
+                 version <high nibble>.<low nibble>
+0x000D           File Length (3b)
 0x0010 - 0x060F  256 * {
 
   Pointer to Sample Data Start  (3b)
@@ -23,7 +25,9 @@ Stream of Sample Data {
 
   8-Bit Signed
   Mono
-  usually 16kHz (any? depends on preferred mapping to notes & octaves)
+  16540Hz
+  (above sample rate according to KAJA's documentation
+   any sample rate possible, for different base note & octave)
 
 }
 
