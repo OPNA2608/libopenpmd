@@ -1,0 +1,32 @@
+=======================================
+                 Header
+=======================================
+
+0x0000 - 0x0053  14 * {
+
+  Pointer to Sample Data Start  (1h)
+  Length of Sample Data         (1h)
+  "Pitch"(?)                    (1b)
+  "Volume"(?)                   (1b)
+
+}
+
+  (0x0000 0x0000 [0x00 0x00] -> no sample for this instrument ID)
+
+}
+
+
+=======================================
+                  Body
+=======================================
+
+Stream of Sample Data {
+
+  4-Bit Unsigned
+  (afaict)
+  Mono
+  16Hz
+  (based on tests, maybe alternatively 8kHz)
+
+}
+
