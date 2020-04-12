@@ -16,7 +16,7 @@
   Start of Sample (32b blocks) in ADPCM RAM  (1h)
   End of Sample (32b blocks) in ADPCM RAM    (1h)
 
-  (0x000000 0x000000 -> no sample for this instrument ID)
+  (0x0000 0x0000 -> no sample for this instrument ID)
 
 }
 
