@@ -1,0 +1,18 @@
+=======================================
+                  Body
+=======================================
+
+0x0000         1..256 * {
+
+  25B - Instrument Register Data. refer to YM2608 manual, "2-2-2: Parameters and channel registers: $30-$B6"
+        - 4x DT/MULTI
+        - 4x TL
+        - 4x KS/AR
+        - 4x AM/DR
+        - 4x SR
+        - 4x SL/RR
+        - FB/Algorithm
+  7B  - Instrument Label
+
+}
+

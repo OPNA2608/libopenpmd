@@ -1,0 +1,36 @@
+=======================================
+                 Header
+=======================================
+
+0x0000           Identifier (4b)
+                 "PVI2"
+0x0004 - 0x000A  Unknown (7b)
+                 Part of identifier? Settings?
+                 "0x10 0x00 0x10 0x02 0xba 0x49 0x02" in all example files
+0x000B           Amount of defined Samples (1b)
+0x000C - 0x000F  Unknown (4b)
+                 Padding?
+                 "0x00 0x00 0x00 0x00" in all example files
+0x0010 - 0x020F  128 * {
+
+  Start of Sample (32b blocks) in ADPCM RAM  (1h)
+  End of Sample (32b blocks) in ADPCM RAM    (1h)
+
+  (0x000000 0x000000 -> no sample for this instrument ID)
+
+}
+
+
+=======================================
+                  Body
+=======================================
+
+Stream of Sample Data {
+
+  Yamaha ADPCM-B encoding (4-Bit Signed ADPCM)
+  Mono
+  16kHz
+  (sample i got seems Stereo or 32kHz?)
+
+}
+

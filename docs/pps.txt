@@ -7,7 +7,7 @@
   Pointer to Sample Data Start  (1h)
   Length of Sample Data         (1h)
   "Pitch"(?)                    (1b)
-  "Volume"(?)                   (1b)
+  Volume Reduction              (1b)
 
 }
 
