@@ -4,9 +4,14 @@
 
 0x0000           Identifier (4b)
                  "PVI2"
-0x0004 - 0x000A  Unknown (7b)
-                 Part of identifier? Settings?
-                 "0x10 0x00 0x10 0x02 0xba 0x49 0x02" in all example files
+0x0004 - 0x0007  Unknown Settings (4b)
+                 Unknown mappings PCME switches <-> Values
+                 "0x10 0x00 0x10 0x02" in all example files
+                 First 1h may be Start Address in ADPCM RAM?
+0x0008 - 0x0009  "Delta-N" playback frequency (1h)
+                 Default 0x49BA "== 16kHz"??
+0x000A           Unknown (1b)
+                 RAM type? (Docs indicate values 0 or 8, all example files have value 0x02?)
 0x000B           Amount of defined Samples (1b)
 0x000C - 0x000F  Unknown (4b)
                  Padding?
@@ -29,8 +34,8 @@ Stream of Sample Data {
 
   Yamaha ADPCM-B encoding (4-Bit Signed ADPCM)
   Mono
-  16kHz
-  (sample i got seems Stereo or 32kHz?)
+  Sample rate as specified earlier
+  (examples i have seems Stereo or 32kHz despite "16kHz" playback frequency setting?)
 
 }
 
