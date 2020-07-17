@@ -74,7 +74,7 @@ bool ripInstrument (FILE* fpPmdFile, char* strInstrumentError) {
 		}
 
 		printf (
-			" %03d %03d %03d %03d %03d %03d %03d %03d %03d %03d\n",
+			" %3d %3d %3d %3d %3d %3d %3d %3d %3d %3d\n",
 			bufInstrumentData[9 + ucOp] & 0x1F,
 			bufInstrumentData[13 + ucOp] & 0x1F,
 			bufInstrumentData[17 + ucOp] & 0x1F,
