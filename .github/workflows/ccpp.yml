@@ -10,7 +10,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: make
-      run:  make -C src/tools
+      run:  make -C src/tools CC=gcc
 
     # - name: test
     #   run:  src/libopenpmd examples/M/PAT1_P.M2

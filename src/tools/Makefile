@@ -14,7 +14,7 @@ LDFLAGS =
 all: $(PROG)
 
 clean:
-	rm -fv $(OBJS)
+	rm -fv $(PROG) $(OBJS)
 
 $(PROG): $(OBJS)
 	$(CC) $(LDFLAGS) $(OBJS) -o $(PROG)
