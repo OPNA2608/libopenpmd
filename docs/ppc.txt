@@ -1,28 +1,37 @@
-=======================================
+========================================
+                 General
+========================================
+
+ADPCM RAM addresses: see docs/common.txt {
+
+  address_start = 0x0026
+  file_header_size = 0x0420
+
+}
+
+
+========================================
                  Header
-=======================================
+========================================
 
 0x0000           Identifier (30b)
                  "ADPCM DATA for  PMD ver.4.4-  "
 0x001E           Address of End of Data (32B blocks) in ADPCM RAM (1h)
-                 File Size:
-                   (address - 0x26 [Start Address in ADPCM RAM])
-                   * 0x20 [1 Address corresponds to 32B of ADPCM Data]
-                   + 0x420 [Size of Header Section]
+                 File Size == address -> file offset
 
 0x0020 - 0x041F  256 * {
 
-  Start of Sample (32B blocks) in ADPCM RAM  (1h)
-  End of Sample (32B blocks) in ADPCM RAM    (1h)
+  Start of Sample (32b blocks) in ADPCM RAM  (1h)
+  End of Sample (32b blocks) in ADPCM RAM    (1h)
 
   (0x0000 0x0000 -> no sample for this instrument ID)
 
 }
 
 
-=======================================
+========================================
                   Body
-=======================================
+========================================
 
 Stream of Sample Data {
 

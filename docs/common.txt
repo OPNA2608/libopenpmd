@@ -1,0 +1,10 @@
+========================================
+                 Common
+========================================
+
+ADPCM RAM address -> file offset to sample data:
+  (address_this - address_start) [address samples start being written to,
+                                  usually preceeded by bank identification data]
+  * 0x20 [1 "address" corresponds to 32b of ADPCM data]
+  + file_header_size
+

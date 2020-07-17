@@ -9,7 +9,7 @@
                  All (\0)s in all example files
 0x0020 - 0x091F  128 * {
 
-  Start of Sample (2h)
+  Start of Sample after header (2h)
   Length of Sample (2h)
   Offset of loop start from sample start (2h)
   Offset of loop end from sample start (2h)
