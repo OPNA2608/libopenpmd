@@ -1,6 +1,7 @@
 name: Project CI
 
-on: [push]
+on:
+  push: [ master ]
 
 jobs:
   build:

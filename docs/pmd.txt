@@ -256,9 +256,12 @@ XY   ZZ                     - (octave+note)%ZZ (X: octave = X+1, Y: note = {c,c#
  Rhythm Sequence Data Section Commands
 =======================================
 
-not fully verified / missing clarity {
+{
 
-00-7F -> XX                 - R XX (PMDMML_MAN: 0-255)
+00-7F -> XX                 - R XX (
+                                PMDMML_MAN specifies 0-255, only 0-127 are actually usable
+                                compiler digests 128-255 but they're interpreted sequence data section commands
+                              )
 80-FF -> XX                 - Sequence Data Section Commands [XX]
 
 }
@@ -272,6 +275,8 @@ offset table:
 R0 -> XXXX
 R1 -> YYYY
 etc
+
+older versions: if R0 points at very next short, == empty
 
 not fully verified / missing clarity {
 

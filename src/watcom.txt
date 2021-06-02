@@ -1,0 +1,6 @@
+16-bit real-mode DOS: (not working, bursting through real-mode limitations rn)
+INCLUDE=/nix/store/bk789lfhq35cgqiwxr8dkx9j3xr7lcnz-old-ow/lib/openwatcom/h wcl -lr main.c p86.c
+
+32-bit DOS w/ DOS4/GW:
+INCLUDE=/nix/store/kghw7gcsfamqnddgq0vs031bh81ngby0-open-watcom-v2-unstable-2021-05-19/lib/openwatcom/h wcl386 -bcl=DOS4G main.c p86.c
+(and copy /nix/store/kghw7gcsfamqnddgq0vs031bh81ngby0-open-watcom-v2-unstable-2021-05-19/lib/openwatcom/binw/dos4gw.exe to same directory as the executable to run in dosbox)
