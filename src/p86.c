@@ -3,23 +3,24 @@
 #include <string.h>
 #include <limits.h>
 
-#define UNUSED(x) (void)(x)
-
 char P86_MAGIC[12] = "PCM86 DATA\n\0";
 unsigned short P86_HEADERLENGTH = 0x0610;
 unsigned long P86_LENGTHMAX = 0xFFFFFF;
 
+/*
+ * Start Helpers
+ */
 boolean try_file_write_c (FILE* file, char* text) {
 	fputc (*text, file);
 	if (ferror (file)) {
 		printf ("Error occurred while writing to file.\n");
-    return false;
+		return false;
 	}
 	return true;
 }
 
 boolean try_file_write_s (FILE* file, char* text) {
-  fputs (text, file);
+	fputs (text, file);
 	if (ferror (file)) {
 		printf ("Error occurred while writing to file.\n");
 		return false;
@@ -45,9 +46,19 @@ boolean try_file_write_dat (FILE* file, signed char* data, unsigned long* length
 	return true;
 }
 
+/*
+ * End Helpers
+ */
+
+boolean P86_Validate (p86_struct* p86) {
+	/* Stub */
+  UNUSED (p86);
+	return true;
+}
+
 p86_struct P86_ImportFile (FILE* p86File) {
-	unsigned long sample_start, sample_length;
-	int i, dontcare;
+	unsigned long sample_start, sample_length, length;
+	unsigned int i, dontcare;
 	void* buffer;
 	long curpos;
 	long startpos = ftell (p86File);
@@ -63,17 +74,19 @@ p86_struct P86_ImportFile (FILE* p86File) {
 	P86_GetVersionString (&parsedData.version, (char*) buffer);
 	printf ("P86 version: %s\n", (char*) buffer);
 
+	/* We ignore the bank's total length field. */
 	fseek (p86File, 3, SEEK_CUR);
-  for (i = 0; i <= 255; ++i) {
+
+	for (i = 0; i <= 255; ++i) {
 		tempSample.id = i;
 
-	  dontcare = fread (&sample_start, 3, 1, p86File);
-	  dontcare = fread (&sample_length, 3, 1, p86File);
+		dontcare = fread (&sample_start, 3, 1, p86File);
+		dontcare = fread (&sample_length, 3, 1, p86File);
 		sample_length = sample_length & 0xFFFFFF;
 		tempSample.length = sample_length;
 
 		if (sample_length > 0) {
-	    curpos = ftell (p86File);
+			curpos = ftell (p86File);
 			fseek (p86File, startpos + sample_start, SEEK_SET);
 			buffer = malloc (sample_length);
 			dontcare = fread (buffer, sample_length, sizeof (char), p86File);
@@ -91,6 +104,11 @@ p86_struct P86_ImportFile (FILE* p86File) {
 		parsedData.samples[i] = parsedSample;
 	}
 
+	length = P86_GetTotalLength (&parsedData);
+	printf ("Total length: %lu\n", length);
+
+	P86_Validate (&parsedData);
+
 	return parsedData;
 }
 
@@ -102,9 +120,11 @@ p86_struct P86_ImportFile (FILE* p86File) {
 
 boolean P86_ExportFile (p86_struct* p86, FILE* p86File) {
 	unsigned long start, length, startWrite, lengthWrite;
-	int i;
+	unsigned int i;
 
 	UNUSED (p86);
+
+	P86_Validate (p86);
 
 	WRITE_S (p86File, P86_MAGIC)
 	WRITE_C (p86File, "\0")
@@ -148,16 +168,53 @@ err:
 #undef WRITE_S
 #undef TRY_WRITE_GOTO_ERR
 
+/* TODO check for allocation errors & return false */
+boolean P86_SetSample (p86_struct* p86, unsigned char id, unsigned long length, signed char* data) {
+  signed char* buffer;
+  p86_sample* newSample;
+	p86_sample tempSample = { 0 };
+
+  tempSample.id = id;
+  tempSample.length = length;
+  buffer = malloc (length);
+  memcpy (buffer, data, length);
+  tempSample.data = buffer;
+
+  newSample = (p86_sample*) malloc (sizeof (p86_sample));
+  memcpy (newSample, &tempSample, sizeof (p86_sample));
+	if (p86->samples[id]->length > 0) {
+	  free (p86->samples[id]->data);
+	}
+  p86->samples[id] = newSample;
+
+	return true;
+}
+
+boolean P86_AddSample (p86_struct* p86, unsigned long length, signed char* data) {
+	unsigned int i;
+
+	for (i = 0; i <= 255; ++i) {
+		if (p86->samples[i]->length == 0) {
+			printf ("Mapping sample to ID #%03u.\n", i);
+			return P86_SetSample (p86, i, length, data);
+		}
+	}
+
+	printf ("ERROR: Can't add sample to bank.\n");
+	printf ("CAUSE: Bank is full (no ID with length 0).\n");
+	return false;
+}
+
 int P86_GetVersionString (unsigned char* version, char* buf) {
 
-  return sprintf (buf, "%u.%u", *version >> 4, *version & 0x0F);
+	return sprintf (buf, "%u.%u", *version >> 4, *version & 0x0F);
 }
 
 unsigned long P86_GetTotalLength (p86_struct* p86) {
 	int i;
-  unsigned long sum = P86_HEADERLENGTH;
+	unsigned long sum = P86_HEADERLENGTH;
 	for (i = 0; i <= 255; ++i) {
-	  if (p86->samples[i]->length > 0) {
+		if (p86->samples[i]->length > 0) {
 			if (sum > (ULONG_MAX - p86->samples[i]->length)) {
 				printf ("ERROR: Overflow in total length calculation detected.\n");
 				printf ("CAUSE: current sum (%luB) + current sample #%03u (%luB) exceeds data type limit (%luB).\n",

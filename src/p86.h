@@ -1,22 +1,19 @@
 #ifndef P86_H
 #define P86_H
 
+#include "common.h"
+#include <stdio.h>
+
 typedef struct {
-  unsigned char id;
-  unsigned long length;
-  signed char* data;
+	unsigned char id;
+	unsigned long length;
+	signed char* data;
 } p86_sample;
 
 typedef struct {
-  unsigned char version;
-  p86_sample* samples[256];
+	unsigned char version;
+	p86_sample* samples[256];
 } p86_struct;
-
-#include <stdio.h>
-
-/* MOVE TO COMMON HEADER FOR C89 COMPATIBILITY */
-typedef enum {false, true} boolean;
-/* MOVE TO COMMON HEADER FOR C89 COMPATIBILITY */
 
 extern char P86_MAGIC[12];
 extern unsigned short P86_HEADERLENGTH;
@@ -54,17 +51,14 @@ boolean P86_ExportData (p86_struct* p86, void* p86Data);
 boolean P86_Validate (p86_struct* p86);
 
 /*
- * TODO Implement
- *
- * Map sample data to next free ID.
- */
-boolean P86_AddSample (p86_struct* p86, unsigned long length, signed char* data);
-/*
- * TODO Implement
- *
  * Map sample data to specified ID.
  */
 boolean P86_SetSample (p86_struct* p86, unsigned char id, unsigned long length, signed char* data);
+
+/*
+ * Map sample data to next free ID.
+ */
+boolean P86_AddSample (p86_struct* p86, unsigned long length, signed char* data);
 
 /*
  * TODO Implement
