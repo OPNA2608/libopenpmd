@@ -6,12 +6,14 @@ The aim is to write a stripped-down, cross-platform - Windows, macOS & Linux (an
 
 ## Roadmap
 
-[ ] - Not started
-[D] - Not working
-[C] - Can fully parse existing file
-[B] - Can properly modify & overwrite existing file
-[A] - Can generate file from scratch, either empty or from supplied data
-[x] - Full support
+- [ ] - Not started
+- [D] - Not working
+- [C] - Can fully parse existing file
+- [B] - Can properly modify & overwrite existing file
+- [A] - Can generate file from scratch, either empty or from supplied data
+- [x] - Full support
+
+---
 
 * [ ] Handle PMD-related bank formats
   * [C] P86
@@ -49,3 +51,4 @@ a better feel for the language & platform limitations.
 - [@NoyemiK](https://github.com/NoyemiK), for her .M(2) file that I may include as an example.
 - [@Blargzargo](https://www.youtube.com/channel/UCDZR3q3anQ9boE6IAvorz8Q), for his independent [documentation of PMD and MML](https://pastebin.com/raw/FP5q8zgC).
 - [@Ravancloak](https://ravancloak.bandcamp.com/), for her example P86 bank.
+

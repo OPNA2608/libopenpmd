@@ -1,8 +1,8 @@
 #ifndef P86_H
 #define P86_H
 
-#include "common.h"
 #include <stdio.h>
+#include "common.h"
 
 typedef struct {
 	unsigned char id;
