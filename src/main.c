@@ -49,10 +49,14 @@ int main (int argc, char* argv[]) {
 		return 1;
 	}
 
+	free (newSampleData);
+
 	printf ("Testing exporting to %s.\n", WRITE_TEST);
 	test = fopen (WRITE_TEST, "wb");
 	P86_ExportFile (&parsedData, test);
 	fclose (test);
+
+	P86_Free (&parsedData);
 
 	return 0;
 }

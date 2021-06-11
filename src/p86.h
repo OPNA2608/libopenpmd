@@ -44,8 +44,11 @@ boolean P86_ExportFile (p86_struct* p86, FILE* p86File);
 boolean P86_ExportData (p86_struct* p86, void* p86Data);
 
 /*
- * TODO Yes? No?
- *
+ * Free a P86 struct.
+ */
+boolean P86_Free (p86_struct* p86);
+
+/*
  * Validates a p86 struct.
  */
 boolean P86_Validate (p86_struct* p86);
@@ -61,11 +64,29 @@ boolean P86_SetSample (p86_struct* p86, unsigned char id, unsigned long length, 
 boolean P86_AddSample (p86_struct* p86, unsigned long length, signed char* data);
 
 /*
- * TODO Implement
- *
- * Unmap sample data from specified ID.
+ * Unmap sample data at specified ID.
+ */
+boolean P86_UnsetSample (p86_struct* p86, unsigned char id);
+
+/*
+ * Unmap sample data at specified ID and shift all IDs afterwards.
  */
 boolean P86_RemoveSample (p86_struct* p86, unsigned char id);
+
+/*
+ * Switches the sample data between two IDs.
+ */
+boolean P86_SwitchSample (p86_struct* p86, unsigned char from, unsigned char to);
+
+/*
+ * Checks if ID id is set (length != 0).
+ */
+boolean P86_IsSet (p86_struct* p86, unsigned char id);
+
+/*
+ * Prints details about P86 data.
+ */
+void P86_Print (p86_struct* p86);
 
 /*
  * Prints the string representation ("major.minor") of a P86 version struct into the supplied buf variable.

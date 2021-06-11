@@ -37,6 +37,8 @@ mkShell {
     gcc
     vimShell
     editorconfig-checker
+    valgrind
+    gdb
   ];
 
   shellHook = ''
