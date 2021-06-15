@@ -214,6 +214,7 @@ boolean P86_SetSample (p86_struct* p86, unsigned char id, unsigned long length, 
 	if (P86_IsSet (p86, id)) {
 	  free (p86->samples[id]->data);
 	}
+	free (p86->samples[id]);
   p86->samples[id] = newSample;
 
 	P86_Validate (p86);
