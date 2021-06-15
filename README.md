@@ -16,7 +16,7 @@ The aim is to write a stripped-down, cross-platform - Windows, macOS & Linux (an
 ---
 
 * [ ] Handle PMD-related bank formats
-  * [C] P86
+  * [B] P86
   * [ ] PPS
   * [ ] PPC
   * [ ] PVI

@@ -1,7 +1,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-/* boolean for C90 */
+/* boolean for C89 */
 typedef enum {false, true} boolean;
 
 /*
@@ -14,5 +14,11 @@ typedef enum {false, true} boolean;
 #else
 	#define UNUSED(x)
 #endif
+
+#define MALLOC_CHECK(varname, size) \
+	varname = malloc (size); if (varname == NULL)
+
+#define MALLOC_ERROR(allocreason, size) \
+	printf ("Failed to allocate memory for %s (length: %luB)!\n", allocreason, size)
 
 #endif /* COMMON_H */

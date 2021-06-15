@@ -10,6 +10,7 @@ unsigned long P86_LENGTHMAX = 0xFFFFFF;
 /*
  * Start Helpers
  */
+
 boolean try_file_write_c (FILE* file, char* text) {
 	fputc (*text, file);
 	if (ferror (file)) {
@@ -50,6 +51,9 @@ boolean try_file_write_dat (FILE* file, signed char* data, unsigned long* length
  * End Helpers
  */
 
+/*
+ * TODO load file in chunks instead
+ */
 p86_struct P86_ImportFile (FILE* p86File) {
 	unsigned int i, dontcare;
 	long curpos;
@@ -78,12 +82,18 @@ p86_struct P86_ImportFile (FILE* p86File) {
 		if (sample_length > 0) {
 			curpos = ftell (p86File);
 			fseek (p86File, startpos + sample_start, SEEK_SET);
-			buffer = malloc (sample_length);
+			MALLOC_CHECK (buffer, sample_length) {
+				MALLOC_ERROR ("imported sample data", sample_length);
+        return parsedData; /* TODO BAD! */
+			}
 			dontcare = fread (buffer, sample_length, sizeof (char), p86File);
 			tempSample.data = (signed char*) buffer;
 			fseek (p86File, curpos, SEEK_SET);
 		}
-		parsedSample = malloc (sizeof (p86_sample));
+		MALLOC_CHECK (parsedSample, sizeof (p86_sample)) {
+			MALLOC_ERROR ("imported p86_sample instance", sizeof (p86_sample));
+			return parsedData; /* TODO BAD! */
+		}
 		memcpy (parsedSample, &tempSample, sizeof (p86_sample));
 		parsedData.samples[i] = parsedSample;
 	}
@@ -104,8 +114,6 @@ p86_struct P86_ImportFile (FILE* p86File) {
 boolean P86_ExportFile (p86_struct* p86, FILE* p86File) {
 	unsigned long start, length, startWrite, lengthWrite;
 	unsigned int i;
-
-	UNUSED (p86);
 
 	P86_Validate (p86);
 	P86_Print (p86);
@@ -197,7 +205,6 @@ boolean P86_Validate (p86_struct* p86) {
 }
 #undef CHECK_VALIDITY
 
-/* TODO check for allocation errors & return false */
 boolean P86_SetSample (p86_struct* p86, unsigned char id, unsigned long length, signed char* data) {
   signed char* buffer;
   p86_sample* newSample;
@@ -205,11 +212,20 @@ boolean P86_SetSample (p86_struct* p86, unsigned char id, unsigned long length, 
 
   tempSample.id = id;
   tempSample.length = length;
-  buffer = malloc (length);
+  MALLOC_CHECK (buffer, length) {
+		MALLOC_ERROR ("sample data buffer", length);
+		return false;
+	}
   memcpy (buffer, data, length);
   tempSample.data = buffer;
 
-  newSample = (p86_sample*) malloc (sizeof (p86_sample));
+  MALLOC_CHECK (newSample, sizeof (p86_sample)) {
+		MALLOC_ERROR ("p86_sample instance", sizeof (p86_sample));
+		if (buffer != NULL) {
+			free (buffer);
+		}
+		return false;
+	}
   memcpy (newSample, &tempSample, sizeof (p86_sample));
 	if (P86_IsSet (p86, id)) {
 	  free (p86->samples[id]->data);
@@ -269,7 +285,10 @@ boolean P86_RemoveSample (p86_struct* p86, unsigned char id) {
 	tempSample.length = 0;
 	tempSample.data = NULL;
 
-	newSample = (p86_sample*) malloc (sizeof (p86_sample));
+	MALLOC_CHECK (newSample, sizeof (p86_sample)) {
+		MALLOC_ERROR ("new sample", sizeof (p86_sample));
+		return false;
+	}
 	memcpy (newSample, &tempSample, sizeof (p86_sample));
 	p86->samples[255] = newSample;
 
