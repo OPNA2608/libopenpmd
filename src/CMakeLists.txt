@@ -1,6 +1,6 @@
 project (p86-test)
 
-cmake_minimum_required (VERSION 3.18)
+cmake_minimum_required (VERSION 3.0)
 
 set (CMAKE_C_STANDARD 90)
 set (CMAKE_C_STANDARD_REQUIRED TRUE)

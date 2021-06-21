@@ -3,7 +3,7 @@
 #include <string.h>
 #include <limits.h>
 
-char P86_MAGIC[12] = "PCM86 DATA\n\0";
+char P86_MAGIC[13] = "PCM86 DATA\n\0";
 unsigned short P86_HEADERLENGTH = 0x0610;
 unsigned long P86_LENGTHMAX = 0xFFFFFF;
 

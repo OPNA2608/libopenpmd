@@ -1,0 +1,3 @@
+[submodule "submodules/adpcm"]
+	path = submodules/adpcm
+	url = https://github.com/superctr/adpcm

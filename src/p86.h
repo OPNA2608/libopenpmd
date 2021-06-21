@@ -15,7 +15,7 @@ typedef struct {
 	p86_sample* samples[256];
 } p86_struct;
 
-extern char P86_MAGIC[12];
+extern char P86_MAGIC[13];
 extern unsigned short P86_HEADERLENGTH;
 extern unsigned long P86_LENGTHMAX;
 

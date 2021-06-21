@@ -1,10 +1,8 @@
-documentation:
-  M:
-    - figure out version-dependency of fields & section (missing extra data section -> how, when, what versions?)
-    - document special PX version too?
-  *:
-    - add rest of PMD-related formats
+todo:
+- implement p86_struct P86_ImportData
+- implement boolean P86_ExportData
+- stdint.h wrapper: use if available, fallback header with typedefs if fully C89-compliant (== no stdint.h)
+- CMake code for ADPCM library (just ADPCM-B part for encoding/decoding PPC sample data)
 
-implementation:
-  - keep simple, dumb parser in sync with documented details (no time right now)
-
+maybe:
+- make file loading code 16-bit real mode compatible (reference files / file offsets instead of loading everything?)
