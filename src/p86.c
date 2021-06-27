@@ -158,6 +158,32 @@ err:
 #undef WRITE_S
 #undef TRY_WRITE_GOTO_ERR
 
+p86_struct P86_New () {
+	unsigned int i;
+	p86_sample* newSample;
+	p86_sample tempSample = { 0 };
+	p86_struct newData = { 0 };
+
+	newData.version = '\x11';
+
+	for (i = 0; i <= 255; ++i) {
+		tempSample.id = i;
+		tempSample.length = 0;
+
+		MALLOC_CHECK (newSample, sizeof (p86_sample)) {
+			MALLOC_ERROR ("blank p86_sample instance", sizeof (p86_sample));
+			return newData; /* deal with it */
+		}
+		memcpy (newSample, &tempSample, sizeof (p86_sample));
+		newData.samples[i] = newSample;
+	}
+
+	P86_Validate (&newData);
+	P86_Print (&newData);
+
+	return newData;
+}
+
 boolean P86_Free (p86_struct* p86) {
 	unsigned int i;
 

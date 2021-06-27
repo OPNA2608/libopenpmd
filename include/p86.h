@@ -44,6 +44,13 @@ boolean P86_ExportFile (p86_struct* p86, FILE* p86File);
 boolean P86_ExportData (p86_struct* p86, void* p86Data);
 
 /*
+ * TODO Implement
+ *
+ * Creates a new blank P86 bank in memory.
+ */
+p86_struct P86_New ();
+
+/*
  * Free a P86 struct.
  */
 boolean P86_Free (p86_struct* p86);
