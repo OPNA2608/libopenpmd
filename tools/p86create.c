@@ -3,7 +3,6 @@
 
 #define OUTPUT_DEFAULT "TEST.P86"
 
-/* memory leak somewhere */
 int main (int argc, char* argv[]) {
 	int i, dontcare;
 	FILE* fileHandle;
@@ -43,6 +42,7 @@ int main (int argc, char* argv[]) {
     dontcare = fread (sampleBuffer, sampleSize, sizeof (char), fileHandle);
 
 		P86_AddSample (&newBank, sampleSize, sampleBuffer);
+		free (sampleBuffer);
 		fclose (fileHandle);
 	}
 
