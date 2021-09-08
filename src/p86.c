@@ -188,11 +188,17 @@ boolean P86_Free (p86_struct* p86) {
 	unsigned int i;
 
 	for (i = 0; i <= 255; ++i) {
-		if (P86_IsSet (p86, i)) {
-			free (p86->samples[i]->data);
-		}
-		free (p86->samples[i]);
+		P86_FreeSample (p86->samples[i]);
 	}
+
+	return true;
+}
+
+boolean P86_FreeSample (p86_sample* sample) {
+	if (sample->length > 0) {
+		free (sample->data);
+	}
+	free (sample);
 
 	return true;
 }
@@ -232,13 +238,14 @@ boolean P86_Validate (p86_struct* p86) {
 #undef CHECK_VALIDITY
 
 boolean P86_SetSample (p86_struct* p86, unsigned char id, unsigned long length, signed char* data) {
-  signed char* buffer;
-  p86_sample* newSample;
+	signed char* buffer;
+	p86_sample* newSample;
 	p86_sample tempSample = { 0 };
 
-  tempSample.id = id;
-  tempSample.length = length;
-  MALLOC_CHECK (buffer, length) {
+	tempSample.id = id;
+	tempSample.length = length;
+
+	MALLOC_CHECK (buffer, length) {
 		MALLOC_ERROR ("sample data buffer", length);
 		return false;
 	}
@@ -263,6 +270,35 @@ boolean P86_SetSample (p86_struct* p86, unsigned char id, unsigned long length, 
 	P86_Print (p86);
 
 	return true;
+}
+
+p86_sample* P86_GetSample (p86_struct* p86, unsigned char id) {
+	signed char* buffer;
+	p86_sample* copiedSample;
+	p86_sample tempSample = { 0 };
+
+	if (!P86_IsSet (p86, id)) {
+		return NULL;
+	}
+
+	tempSample.id = id;
+	tempSample.length = p86->samples[id]->length;
+
+	MALLOC_CHECK (buffer, tempSample.length) {
+		MALLOC_ERROR ("sample data buffer", tempSample.length);
+		return NULL;
+	}
+	memcpy (buffer, p86->samples[id]->data, tempSample.length);
+	tempSample.data = buffer;
+
+	MALLOC_CHECK (copiedSample, sizeof (p86_sample)) {
+		MALLOC_ERROR ("p86_sample instance", sizeof (p86_sample));
+		free (buffer);
+		return NULL;
+	}
+	memcpy (copiedSample, &tempSample, sizeof (p86_sample));
+
+	return copiedSample;
 }
 
 boolean P86_AddSample (p86_struct* p86, unsigned long length, signed char* data) {

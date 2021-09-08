@@ -56,6 +56,11 @@ p86_struct P86_New ();
 boolean P86_Free (p86_struct* p86);
 
 /*
+ * Free a P86 sample struct.
+ */
+boolean P86_FreeSample (p86_sample* sample);
+
+/*
  * Validates a p86 struct.
  */
 boolean P86_Validate (p86_struct* p86);
@@ -64,6 +69,13 @@ boolean P86_Validate (p86_struct* p86);
  * Map sample data to specified ID.
  */
 boolean P86_SetSample (p86_struct* p86, unsigned char id, unsigned long length, signed char* data);
+
+/*
+ * Get a pointer to a copy of the sample data with the specified ID.
+ * Returns NULL if ID is not set.
+ * You're responsible for freeing the returned pointer!
+ */
+p86_sample* P86_GetSample (p86_struct* p86, unsigned char id);
 
 /*
  * Map sample data to next free ID.
