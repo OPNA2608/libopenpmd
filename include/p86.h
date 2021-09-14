@@ -33,15 +33,19 @@ p86_struct P86_ImportData (void* p86Data);
 
 /*
  * Writes a P86 file from p86 pointer p86 to FILE pointer p86File.
+ *
+ * Possible return values:
+ * * 0 - No Error
+ * * 1 - Some error (TODO more specific error codes!)
  */
-boolean P86_ExportFile (p86_struct* p86, FILE* p86File);
+int P86_ExportFile (p86_struct* p86, FILE* p86File);
 
 /*
  * TODO Implement
  *
  * Writes a P86 file from p86 pointer p86 to voidpointer p86Data.
  */
-boolean P86_ExportData (p86_struct* p86, void* p86Data);
+int P86_ExportData (p86_struct* p86, void* p86Data);
 
 /*
  * TODO Implement
@@ -53,22 +57,30 @@ p86_struct P86_New ();
 /*
  * Free a P86 struct.
  */
-boolean P86_Free (p86_struct* p86);
+void P86_Free (p86_struct* p86);
 
 /*
  * Free a P86 sample struct.
  */
-boolean P86_FreeSample (p86_sample* sample);
+void P86_FreeSample (p86_sample* sample);
 
 /*
  * Validates a p86 struct.
+ *
+ * Possible return values:
+ * * 0 - No Error
+ * * 1 - Some error (TODO more specific error codes!)
  */
-boolean P86_Validate (p86_struct* p86);
+int P86_Validate (p86_struct* p86);
 
 /*
  * Map sample data to specified ID.
+ *
+ * Possible return values:
+ * * 0 - No Error
+ * * 1 - Some error (TODO more specific error codes!)
  */
-boolean P86_SetSample (p86_struct* p86, unsigned char id, unsigned long length, signed char* data);
+int P86_SetSample (p86_struct* p86, unsigned char id, unsigned long length, signed char* data);
 
 /*
  * Get a pointer to a copy of the sample data with the specified ID.
@@ -79,28 +91,36 @@ p86_sample* P86_GetSample (p86_struct* p86, unsigned char id);
 
 /*
  * Map sample data to next free ID.
+ *
+ * Possible return values:
+ * * 0 - No Error
+ * * 1 - Some error (TODO more specific error codes!)
  */
-boolean P86_AddSample (p86_struct* p86, unsigned long length, signed char* data);
+int P86_AddSample (p86_struct* p86, unsigned long length, signed char* data);
 
 /*
  * Unmap sample data at specified ID.
+ *
+ * Possible return values:
+ * * 0 - No Error
+ * * 1 - Some error (TODO more specific error codes!)
  */
-boolean P86_UnsetSample (p86_struct* p86, unsigned char id);
+int P86_UnsetSample (p86_struct* p86, unsigned char id);
 
 /*
  * Unmap sample data at specified ID and shift all IDs afterwards.
  */
-boolean P86_RemoveSample (p86_struct* p86, unsigned char id);
+int P86_RemoveSample (p86_struct* p86, unsigned char id);
 
 /*
  * Switches the sample data between two IDs.
  */
-boolean P86_SwitchSample (p86_struct* p86, unsigned char from, unsigned char to);
+int P86_SwitchSample (p86_struct* p86, unsigned char from, unsigned char to);
 
 /*
  * Checks if ID id is set (length != 0).
  */
-boolean P86_IsSet (p86_struct* p86, unsigned char id);
+int P86_IsSet (p86_struct* p86, unsigned char id);
 
 /*
  * Prints details about P86 data.

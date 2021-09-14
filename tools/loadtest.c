@@ -38,13 +38,13 @@ int main (int argc, char* argv[]) {
 	}
 
 	printf ("Testing sample adding (ID #%03u with default bank).\n", SAMPLE_TEST_ID_ADD);
-	if (!P86_AddSample (&parsedData, SAMPLE_TEST_LENGTH, newSampleData)) {
+	if (P86_AddSample (&parsedData, SAMPLE_TEST_LENGTH, newSampleData) > 0) {
 		printf ("Adding sample data failed.\n");
 		return 1;
 	}
 
 	printf ("Testing sample setting (ID #%03u with default bank).\n", SAMPLE_TEST_ID_SET);
-	if (!P86_SetSample (&parsedData, SAMPLE_TEST_ID_SET, SAMPLE_TEST_LENGTH, newSampleData)) {
+	if (P86_SetSample (&parsedData, SAMPLE_TEST_ID_SET, SAMPLE_TEST_LENGTH, newSampleData) > 0) {
 		printf ("Setting sample data failed.\n");
 		return 1;
 	}

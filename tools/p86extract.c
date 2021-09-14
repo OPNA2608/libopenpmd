@@ -30,7 +30,7 @@ int main (int argc, char* argv[]) {
 	fclose (fileHandle);
 
 	for (i = 0; i < 255; ++i) {
-		if (P86_IsSet (&p86Bank, i)) {
+		if (P86_IsSet (&p86Bank, i) == 0) {
 			printf ("%03d...\n", i);
 
 			p86Sample = P86_GetSample (&p86Bank, i);

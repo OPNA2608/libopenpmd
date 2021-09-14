@@ -34,54 +34,54 @@ ppc_struct PPC_ImportData (void* ppcData);
 /*
  * Writes a PPC file from ppc pointer ppc to FILE pointer ppcFile.
  */
-boolean PPC_ExportFile (ppc_struct* ppc, FILE* ppcFile);
+int PPC_ExportFile (ppc_struct* ppc, FILE* ppcFile);
 
 /*
  * TODO Implement
  *
  * Writes a PPC file from ppc pointer ppc to voidpointer ppcData.
  */
-boolean PPC_ExportData (ppc_struct* ppc, void* ppcData);
+int PPC_ExportData (ppc_struct* ppc, void* ppcData);
 
 /*
  * Free a PPC struct.
  */
-boolean PPC_Free (ppc_struct* ppc);
+int PPC_Free (ppc_struct* ppc);
 
 /*
  * Validates a ppc struct.
  */
-boolean PPC_Validate (ppc_struct* ppc);
+int PPC_Validate (ppc_struct* ppc);
 
 /*
  * Map sample data to specified ID.
  */
-boolean PPC_SetSample (ppc_struct* ppc, unsigned char id, unsigned long length, signed char* data);
+int PPC_SetSample (ppc_struct* ppc, unsigned char id, unsigned long length, signed char* data);
 
 /*
  * Map sample data to next free ID.
  */
-boolean PPC_AddSample (ppc_struct* ppc, unsigned long length, signed char* data);
+int PPC_AddSample (ppc_struct* ppc, unsigned long length, signed char* data);
 
 /*
  * Unmap sample data at specified ID.
  */
-boolean PPC_UnsetSample (ppc_struct* ppc, unsigned char id);
+int PPC_UnsetSample (ppc_struct* ppc, unsigned char id);
 
 /*
  * Unmap sample data at specified ID and shift all IDs afterwards.
  */
-boolean PPC_RemoveSample (ppc_struct* ppc, unsigned char id);
+int PPC_RemoveSample (ppc_struct* ppc, unsigned char id);
 
 /*
  * Switches the sample data between two IDs.
  */
-boolean PPC_SwitchSample (ppc_struct* ppc, unsigned char from, unsigned char to);
+int PPC_SwitchSample (ppc_struct* ppc, unsigned char from, unsigned char to);
 
 /*
  * Checks if ID id is set (length != 0).
  */
-boolean PPC_IsSet (ppc_struct* ppc, unsigned char id);
+int PPC_IsSet (ppc_struct* ppc, unsigned char id);
 
 /*
  * Prints details about PPC data.

@@ -111,7 +111,7 @@ p86_struct P86_ImportFile (FILE* p86File) {
 #define WRITE_C(file, text) TRY_WRITE_GOTO_ERR(try_file_write_c, file, text)
 #define WRITE_L(file, length) TRY_WRITE_GOTO_ERR(try_file_write_l, file, length)
 #define WRITE_DAT(file, data, length) if (!try_file_write_dat (file, data, length)) goto err;
-boolean P86_ExportFile (p86_struct* p86, FILE* p86File) {
+int P86_ExportFile (p86_struct* p86, FILE* p86File) {
 	unsigned long start, length, startWrite, lengthWrite;
 	unsigned int i;
 
@@ -146,11 +146,11 @@ boolean P86_ExportFile (p86_struct* p86, FILE* p86File) {
 		}
 	}
 
-	return true;
+	return 0;
 
 err:
 	printf ("Failed to write to file.\n");
-	return false;
+	return 1;
 }
 #undef WRITE_DAT
 #undef WRITE_L
@@ -184,30 +184,26 @@ p86_struct P86_New () {
 	return newData;
 }
 
-boolean P86_Free (p86_struct* p86) {
+void P86_Free (p86_struct* p86) {
 	unsigned int i;
 
 	for (i = 0; i <= 255; ++i) {
 		P86_FreeSample (p86->samples[i]);
 	}
-
-	return true;
 }
 
-boolean P86_FreeSample (p86_sample* sample) {
+void P86_FreeSample (p86_sample* sample) {
 	if (sample->length > 0) {
 		free (sample->data);
 	}
 	free (sample);
-
-	return true;
 }
 
 #define CHECK_VALIDITY() if (valid) {\
 	printf ("Data failed validation check! Continuing.\n"); \
 	valid = false; \
 }
-boolean P86_Validate (p86_struct* p86) {
+int P86_Validate (p86_struct* p86) {
 	unsigned int i;
 	unsigned long totalSize;
 	boolean valid = true;
@@ -230,14 +226,15 @@ boolean P86_Validate (p86_struct* p86) {
 
 	if (valid) {
 		printf ("Data is valid!\n");
+		return 0;
 	} else {
 		printf ("See above output for reason for failed validity check.\n");
+		return 1;
 	}
-	return valid;
 }
 #undef CHECK_VALIDITY
 
-boolean P86_SetSample (p86_struct* p86, unsigned char id, unsigned long length, signed char* data) {
+int P86_SetSample (p86_struct* p86, unsigned char id, unsigned long length, signed char* data) {
 	signed char* buffer;
 	p86_sample* newSample;
 	p86_sample tempSample = { 0 };
@@ -247,7 +244,7 @@ boolean P86_SetSample (p86_struct* p86, unsigned char id, unsigned long length, 
 
 	MALLOC_CHECK (buffer, length) {
 		MALLOC_ERROR ("sample data buffer", length);
-		return false;
+		return 1;
 	}
   memcpy (buffer, data, length);
   tempSample.data = buffer;
@@ -257,10 +254,10 @@ boolean P86_SetSample (p86_struct* p86, unsigned char id, unsigned long length, 
 		if (buffer != NULL) {
 			free (buffer);
 		}
-		return false;
+		return 1;
 	}
   memcpy (newSample, &tempSample, sizeof (p86_sample));
-	if (P86_IsSet (p86, id)) {
+	if (P86_IsSet (p86, id) == 0) {
 	  free (p86->samples[id]->data);
 	}
 	free (p86->samples[id]);
@@ -269,7 +266,7 @@ boolean P86_SetSample (p86_struct* p86, unsigned char id, unsigned long length, 
 	P86_Validate (p86);
 	P86_Print (p86);
 
-	return true;
+	return 0;
 }
 
 p86_sample* P86_GetSample (p86_struct* p86, unsigned char id) {
@@ -277,7 +274,7 @@ p86_sample* P86_GetSample (p86_struct* p86, unsigned char id) {
 	p86_sample* copiedSample;
 	p86_sample tempSample = { 0 };
 
-	if (!P86_IsSet (p86, id)) {
+	if (P86_IsSet (p86, id) > 0) {
 		return NULL;
 	}
 
@@ -301,11 +298,11 @@ p86_sample* P86_GetSample (p86_struct* p86, unsigned char id) {
 	return copiedSample;
 }
 
-boolean P86_AddSample (p86_struct* p86, unsigned long length, signed char* data) {
+int P86_AddSample (p86_struct* p86, unsigned long length, signed char* data) {
 	unsigned int i;
 
 	for (i = 0; i <= 255; ++i) {
-		if (!P86_IsSet (p86, i)) {
+		if (P86_IsSet (p86, i) > 0) {
 			printf ("Mapping sample to ID #%03u.\n", i);
 			return P86_SetSample (p86, i, length, data);
 		}
@@ -313,11 +310,11 @@ boolean P86_AddSample (p86_struct* p86, unsigned long length, signed char* data)
 
 	printf ("ERROR: Can't add sample to bank.\n");
 	printf ("CAUSE: Bank is full (no ID with length 0).\n");
-	return false;
+	return 1;
 }
 
-boolean P86_UnsetSample (p86_struct* p86, unsigned char id) {
-	if (P86_IsSet (p86, id)) {
+int P86_UnsetSample (p86_struct* p86, unsigned char id) {
+	if (P86_IsSet (p86, id) == 0) {
 		free (p86->samples[id]->data);
 		p86->samples[id]->length = 0;
 	}
@@ -325,17 +322,17 @@ boolean P86_UnsetSample (p86_struct* p86, unsigned char id) {
 	P86_Validate (p86);
 	P86_Print (p86);
 
-	return true;
+	return 0;
 }
 
-boolean P86_RemoveSample (p86_struct* p86, unsigned char id) {
+int P86_RemoveSample (p86_struct* p86, unsigned char id) {
 	unsigned int i;
 	p86_sample* newSample;
 	p86_sample tempSample = { 0 };
 
-	if (!P86_UnsetSample (p86, id)) {
+	if (P86_UnsetSample (p86, id) > 0) {
 		printf ("Failed to unmap sample at ID #%03u.\n", id);
-		return false;
+		return 1;
 	}
 
 	for (i = id; i < 255; ++i) {
@@ -349,7 +346,7 @@ boolean P86_RemoveSample (p86_struct* p86, unsigned char id) {
 
 	MALLOC_CHECK (newSample, sizeof (p86_sample)) {
 		MALLOC_ERROR ("new sample", sizeof (p86_sample));
-		return false;
+		return 1;
 	}
 	memcpy (newSample, &tempSample, sizeof (p86_sample));
 	p86->samples[255] = newSample;
@@ -357,10 +354,10 @@ boolean P86_RemoveSample (p86_struct* p86, unsigned char id) {
 	P86_Validate (p86);
 	P86_Print (p86);
 
-	return true;
+	return 0;
 }
 
-boolean P86_SwitchSamples (p86_struct* p86, unsigned char from, unsigned char to) {
+int P86_SwitchSamples (p86_struct* p86, unsigned char from, unsigned char to) {
 	unsigned long tempLength;
 	signed char* tempData;
 
@@ -376,11 +373,11 @@ boolean P86_SwitchSamples (p86_struct* p86, unsigned char from, unsigned char to
 	P86_Validate (p86);
 	P86_Print (p86);
 
-	return true;
+	return 0;
 }
 
-boolean P86_IsSet (p86_struct* p86, unsigned char id) {
-	return p86->samples[id]->length > 0;
+int P86_IsSet (p86_struct* p86, unsigned char id) {
+	return (p86->samples[id]->length > 0) ? 0 : 1;
 }
 
 void P86_Print (p86_struct* p86) {
@@ -392,7 +389,7 @@ void P86_Print (p86_struct* p86) {
 
 	for (i = 0; i <= 255; ++i) {
 		printf ("Sample #%03u ", i);
-		if (P86_IsSet (p86, i)) {
+		if (P86_IsSet (p86, i) == 0) {
 			printf ("set, Length: %lu.\n", p86->samples[i]->length);
 		} else {
 			printf ("unset.\n");
