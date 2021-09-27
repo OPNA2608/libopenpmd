@@ -26,7 +26,4 @@ const char* PMD_GetError ();
 #define MALLOC_CHECK(varname, size) \
 	varname = malloc (size); if (varname == NULL)
 
-#define MALLOC_ERROR(allocreason, size) \
-	printf ("Failed to allocate memory for %s (length: %luB)!\n", allocreason, size)
-
 #endif /* COMMON_H */

@@ -55,6 +55,7 @@ boolean try_file_write_dat (FILE* file, signed char* data, unsigned long* length
  * TODO load file in chunks instead
  */
 p86_struct P86_ImportFile (FILE* p86File) {
+	char errormsg[PMD_ERRMAXSIZE];
 	unsigned int i, dontcare;
 	long curpos;
 	p86_sample* parsedSample;
@@ -83,7 +84,8 @@ p86_struct P86_ImportFile (FILE* p86File) {
 			curpos = ftell (p86File);
 			fseek (p86File, startpos + sample_start, SEEK_SET);
 			MALLOC_CHECK (buffer, sample_length) {
-				MALLOC_ERROR ("imported sample data", sample_length);
+				snprintf (errormsg, PMD_ERRMAXSIZE, pmd_error_malloc, "imported sample data", sample_length);
+				PMD_SetError (errormsg);
         return parsedData; /* TODO BAD! */
 			}
 			dontcare = fread (buffer, sample_length, sizeof (char), p86File);
@@ -91,7 +93,8 @@ p86_struct P86_ImportFile (FILE* p86File) {
 			fseek (p86File, curpos, SEEK_SET);
 		}
 		MALLOC_CHECK (parsedSample, sizeof (p86_sample)) {
-			MALLOC_ERROR ("imported p86_sample instance", sizeof (p86_sample));
+			snprintf (errormsg, PMD_ERRMAXSIZE, pmd_error_malloc, "imported p86_sample struct", sizeof (p86_sample));
+			PMD_SetError (errormsg);
 			return parsedData; /* TODO BAD! */
 		}
 		memcpy (parsedSample, &tempSample, sizeof (p86_sample));
