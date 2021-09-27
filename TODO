@@ -1,4 +1,5 @@
 todo:
+- rewrite P86_{Im,Ex}portFile to be cleaner
 - implement p86_struct P86_ImportData
 - implement boolean P86_ExportData
 - stdint.h wrapper: use if available, fallback header with typedefs if fully C89-compliant (== no stdint.h)
