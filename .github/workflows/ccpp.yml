@@ -18,7 +18,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Configure
-      run:  cmake -B $PWD/build
+      run:  cmake -B $PWD/build -DCMAKE_BUILD_TYPE=Debug
 
     - name: Build
       run:  cmake --build $PWD/build
@@ -27,11 +27,11 @@ jobs:
       run: |
         cd $PWD/build
 
-        ./tools/loadtest
+        ./tools/Debug/loadtest
         mv test.P86 LOADTEST.P86
 
-        ./tools/p86extract LOADTEST.P86
-        ./tools/p86create TEST.*.RAW
+        ./tools/Debug/p86extract LOADTEST.P86
+        ./tools/Debug/p86create TEST.*.RAW
         mv TEST.P86 P86CREATE.P86
 
         CertUtil -hashfile LOADTEST.P86 MD5
