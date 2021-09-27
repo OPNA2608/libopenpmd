@@ -3,9 +3,9 @@
 #include <string.h>
 #include <limits.h>
 
-char P86_MAGIC[13] = "PCM86 DATA\n\0";
-unsigned short P86_HEADERLENGTH = 0x0610;
-unsigned long P86_LENGTHMAX = 0xFFFFFF;
+const char P86_MAGIC[13] = "PCM86 DATA\n\0";
+const unsigned short P86_HEADERLENGTH = 0x0610;
+const unsigned long P86_LENGTHMAX = 0xFFFFFF;
 
 /*
  * Start Helpers
@@ -118,7 +118,7 @@ int P86_ExportFile (p86_struct* p86, FILE* p86File) {
 	P86_Validate (p86);
 	P86_Print (p86);
 
-	WRITE_S (p86File, P86_MAGIC)
+	WRITE_S (p86File, (char*) P86_MAGIC)
 	WRITE_C (p86File, "\0")
 	WRITE_C (p86File, "\x11")
 
@@ -160,6 +160,7 @@ err:
 
 p86_struct P86_New () {
 	unsigned int i;
+	char errormsg[PMD_ERRMAXSIZE];
 	p86_sample* newSample;
 	p86_sample tempSample = { 0 };
 	p86_struct newData = { 0 };
@@ -171,8 +172,9 @@ p86_struct P86_New () {
 		tempSample.length = 0;
 
 		MALLOC_CHECK (newSample, sizeof (p86_sample)) {
-			MALLOC_ERROR ("blank p86_sample instance", sizeof (p86_sample));
-			return newData; /* deal with it */
+			snprintf (errormsg, PMD_ERRMAXSIZE, pmd_error_malloc, "blank p86_sample instance", sizeof (p86_sample));
+			PMD_SetError (errormsg);
+			return newData; /* TODO see header for problem with this */
 		}
 		memcpy (newSample, &tempSample, sizeof (p86_sample));
 		newData.samples[i] = newSample;
@@ -204,15 +206,22 @@ void P86_FreeSample (p86_sample* sample) {
 	valid = false; \
 }
 int P86_Validate (p86_struct* p86) {
+	const char* p86_error_length_sample = "Sample at ID #%03u (%luB) exceeds per-sample length limit (%luB)";
+	const char* p86_error_length_total = "Total length (%luB) exceeds maximum length limit (%luB)";
+	char errormsg[PMD_ERRMAXSIZE];
 	unsigned int i;
 	unsigned long totalSize;
 	boolean valid = true;
 
+	/*
+	 * FIXME Errors in this function overwrite each other since switching to global error functions!
+	 */
+
 	printf ("Checking sample lengths.\n");
 	for (i = 0; i <= 255; ++i) {
 		if (p86->samples[i]->length > P86_LENGTHMAX) {
-			printf ("Sample at ID #%03u (%luB) exceeds per-sample length limit (%luB)!\n",
-					i, p86->samples[i]->length, P86_LENGTHMAX);
+			snprintf (errormsg, PMD_ERRMAXSIZE, p86_error_length_sample, i, p86->samples[i]->length, P86_LENGTHMAX);
+			PMD_SetError (errormsg);
 			CHECK_VALIDITY();
 		}
 	}
@@ -220,7 +229,8 @@ int P86_Validate (p86_struct* p86) {
 	printf ("Checking total length.\n");
 	totalSize = P86_GetTotalLength (p86);
 	if (totalSize > P86_LENGTHMAX) {
-		printf ("Total length (%luB) exceeds maximum length limit (%luB)!\n", totalSize, P86_LENGTHMAX);
+		snprintf (errormsg, PMD_ERRMAXSIZE, p86_error_length_total, totalSize, P86_LENGTHMAX);
+		PMD_SetError (errormsg);
 		CHECK_VALIDITY();
 	}
 
@@ -228,13 +238,14 @@ int P86_Validate (p86_struct* p86) {
 		printf ("Data is valid!\n");
 		return 0;
 	} else {
-		printf ("See above output for reason for failed validity check.\n");
+		printf ("See PMD_GetError() for reason for failed validity check.\n");
 		return 1;
 	}
 }
 #undef CHECK_VALIDITY
 
 int P86_SetSample (p86_struct* p86, unsigned char id, unsigned long length, signed char* data) {
+	char errormsg[PMD_ERRMAXSIZE];
 	signed char* buffer;
 	p86_sample* newSample;
 	p86_sample tempSample = { 0 };
@@ -243,18 +254,20 @@ int P86_SetSample (p86_struct* p86, unsigned char id, unsigned long length, sign
 	tempSample.length = length;
 
 	MALLOC_CHECK (buffer, length) {
-		MALLOC_ERROR ("sample data buffer", length);
+		snprintf (errormsg, PMD_ERRMAXSIZE, pmd_error_malloc, "sample data buffer", length);
+		PMD_SetError (errormsg);
 		return 1;
 	}
   memcpy (buffer, data, length);
   tempSample.data = buffer;
 
   MALLOC_CHECK (newSample, sizeof (p86_sample)) {
-		MALLOC_ERROR ("p86_sample instance", sizeof (p86_sample));
+		snprintf (errormsg, PMD_ERRMAXSIZE, pmd_error_malloc, "p86_sample struct", sizeof (p86_sample));
+		PMD_SetError (errormsg);
 		if (buffer != NULL) {
 			free (buffer);
 		}
-		return 1;
+		return 2;
 	}
   memcpy (newSample, &tempSample, sizeof (p86_sample));
 	if (P86_IsSet (p86, id) == 0) {
@@ -270,11 +283,14 @@ int P86_SetSample (p86_struct* p86, unsigned char id, unsigned long length, sign
 }
 
 p86_sample* P86_GetSample (p86_struct* p86, unsigned char id) {
+	const char* p86_error_id_missing = "Requested sample ID is not set";
+	char errormsg[PMD_ERRMAXSIZE];
 	signed char* buffer;
 	p86_sample* copiedSample;
 	p86_sample tempSample = { 0 };
 
 	if (P86_IsSet (p86, id) > 0) {
+		PMD_SetError (p86_error_id_missing);
 		return NULL;
 	}
 
@@ -282,14 +298,16 @@ p86_sample* P86_GetSample (p86_struct* p86, unsigned char id) {
 	tempSample.length = p86->samples[id]->length;
 
 	MALLOC_CHECK (buffer, tempSample.length) {
-		MALLOC_ERROR ("sample data buffer", tempSample.length);
+		snprintf (errormsg, PMD_ERRMAXSIZE, pmd_error_malloc, "sample data buffer", tempSample.length);
+		PMD_SetError (errormsg);
 		return NULL;
 	}
 	memcpy (buffer, p86->samples[id]->data, tempSample.length);
 	tempSample.data = buffer;
 
 	MALLOC_CHECK (copiedSample, sizeof (p86_sample)) {
-		MALLOC_ERROR ("p86_sample instance", sizeof (p86_sample));
+		snprintf (errormsg, PMD_ERRMAXSIZE, pmd_error_malloc, "p86_sample struct", sizeof (p86_sample));
+		PMD_SetError (errormsg);
 		free (buffer);
 		return NULL;
 	}
@@ -299,6 +317,7 @@ p86_sample* P86_GetSample (p86_struct* p86, unsigned char id) {
 }
 
 int P86_AddSample (p86_struct* p86, unsigned long length, signed char* data) {
+	const char* p86_error_bank_full = "All bank IDs are already in use";
 	unsigned int i;
 
 	for (i = 0; i <= 255; ++i) {
@@ -308,8 +327,7 @@ int P86_AddSample (p86_struct* p86, unsigned long length, signed char* data) {
 		}
 	}
 
-	printf ("ERROR: Can't add sample to bank.\n");
-	printf ("CAUSE: Bank is full (no ID with length 0).\n");
+	PMD_SetError (p86_error_bank_full);
 	return 1;
 }
 
@@ -326,14 +344,12 @@ int P86_UnsetSample (p86_struct* p86, unsigned char id) {
 }
 
 int P86_RemoveSample (p86_struct* p86, unsigned char id) {
+	char errormsg[PMD_ERRMAXSIZE];
 	unsigned int i;
 	p86_sample* newSample;
 	p86_sample tempSample = { 0 };
 
-	if (P86_UnsetSample (p86, id) > 0) {
-		printf ("Failed to unmap sample at ID #%03u.\n", id);
-		return 1;
-	}
+	P86_UnsetSample (p86, id);
 
 	for (i = id; i < 255; ++i) {
 		p86->samples[i] = p86->samples[i+1];
@@ -345,7 +361,8 @@ int P86_RemoveSample (p86_struct* p86, unsigned char id) {
 	tempSample.data = NULL;
 
 	MALLOC_CHECK (newSample, sizeof (p86_sample)) {
-		MALLOC_ERROR ("new sample", sizeof (p86_sample));
+		snprintf (errormsg, PMD_ERRMAXSIZE, pmd_error_malloc, "p86_sample struct", sizeof (p86_sample));
+		PMD_SetError (errormsg);
 		return 1;
 	}
 	memcpy (newSample, &tempSample, sizeof (p86_sample));
@@ -388,11 +405,8 @@ void P86_Print (p86_struct* p86) {
 	printf ("P86DRV version: %s\n", versionString);
 
 	for (i = 0; i <= 255; ++i) {
-		printf ("Sample #%03u ", i);
 		if (P86_IsSet (p86, i) == 0) {
-			printf ("set, Length: %lu.\n", p86->samples[i]->length);
-		} else {
-			printf ("unset.\n");
+			printf ("Sample #%03u set, Length: %lu.\n", i, p86->samples[i]->length);
 		}
 	}
 
@@ -404,14 +418,16 @@ int P86_GetVersionString (unsigned char* version, char* buf) {
 }
 
 unsigned long P86_GetTotalLength (p86_struct* p86) {
+	const char* p86_error_length_overflow = "Overflow in total length calculation, current sum (%luB) "
+		"+ current sample #%03u (%luB) exceeds data type limit (%luB)";
+	char errormsg[PMD_ERRMAXSIZE];
 	int i;
 	unsigned long sum = P86_HEADERLENGTH;
 	for (i = 0; i <= 255; ++i) {
 		if (p86->samples[i]->length > 0) {
 			if (sum > (ULONG_MAX - p86->samples[i]->length)) {
-				printf ("ERROR: Overflow in total length calculation detected.\n");
-				printf ("CAUSE: current sum (%luB) + current sample #%03u (%luB) exceeds data type limit (%luB).\n",
-					sum, i, p86->samples[i]->length, ULONG_MAX);
+				snprintf (errormsg, PMD_ERRMAXSIZE, p86_error_length_overflow, sum, i, p86->samples[i]->length, ULONG_MAX);
+				PMD_SetError (errormsg);
 				return 0;
 			}
 			sum += p86->samples[i]->length;

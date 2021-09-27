@@ -15,9 +15,9 @@ typedef struct {
 	p86_sample* samples[256];
 } p86_struct;
 
-extern char P86_MAGIC[13];
-extern unsigned short P86_HEADERLENGTH;
-extern unsigned long P86_LENGTHMAX;
+extern const char P86_MAGIC[13];
+extern const unsigned short P86_HEADERLENGTH;
+extern const unsigned long P86_LENGTHMAX;
 
 /*
  * Reads a P86 file from FILE pointer p86File and parses its contents into a P86 struct.
@@ -48,9 +48,9 @@ int P86_ExportFile (p86_struct* p86, FILE* p86File);
 int P86_ExportData (p86_struct* p86, void* p86Data);
 
 /*
- * TODO Implement
- *
  * Creates a new blank P86 bank in memory.
+ *
+ * TODO Return pointer instead so a failure can return NULL.
  */
 p86_struct P86_New ();
 
@@ -78,7 +78,8 @@ int P86_Validate (p86_struct* p86);
  *
  * Possible return values:
  * * 0 - No Error
- * * 1 - Some error (TODO more specific error codes!)
+ * * 1 - Sample data buffer allocation failure
+ * * 2 - p86_sample struct allocation failure
  */
 int P86_SetSample (p86_struct* p86, unsigned char id, unsigned long length, signed char* data);
 
@@ -94,21 +95,27 @@ p86_sample* P86_GetSample (p86_struct* p86, unsigned char id);
  *
  * Possible return values:
  * * 0 - No Error
- * * 1 - Some error (TODO more specific error codes!)
+ * * 1 - All bank IDs are already in use
  */
 int P86_AddSample (p86_struct* p86, unsigned long length, signed char* data);
 
 /*
  * Unmap sample data at specified ID.
  *
+ * TODO Currently cannot fail, maybe make void instead?
+ *
  * Possible return values:
  * * 0 - No Error
- * * 1 - Some error (TODO more specific error codes!)
+ * * 1 - Some error
  */
 int P86_UnsetSample (p86_struct* p86, unsigned char id);
 
 /*
  * Unmap sample data at specified ID and shift all IDs afterwards.
+ *
+ * Possible return values:
+ * * 0 - No Error
+ * * 1 - p86_sample struct allocation failure
  */
 int P86_RemoveSample (p86_struct* p86, unsigned char id);
 
