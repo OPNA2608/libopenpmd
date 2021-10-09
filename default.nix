@@ -22,6 +22,8 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ cmake toilet valgrind ];
 
+  cmakeBuildType = "Debug";
+
   # stub until install step is implemented
   installPhase = ''
     print() {
