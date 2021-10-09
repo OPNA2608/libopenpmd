@@ -161,14 +161,15 @@ err:
 #undef WRITE_S
 #undef TRY_WRITE_GOTO_ERR
 
-p86_struct P86_New () {
+p86_struct* P86_New () {
 	unsigned int i;
 	char errormsg[PMD_ERRMAXSIZE];
 	p86_sample* newSample;
 	p86_sample tempSample = { 0 };
-	p86_struct newData = { 0 };
+	p86_struct* newData;
+	p86_struct tempData;
 
-	newData.version = '\x11';
+	tempData.version = '\x11';
 
 	for (i = 0; i <= 255; ++i) {
 		tempSample.id = i;
@@ -177,14 +178,23 @@ p86_struct P86_New () {
 		MALLOC_CHECK (newSample, sizeof (p86_sample)) {
 			snprintf (errormsg, PMD_ERRMAXSIZE, pmd_error_malloc, "blank p86_sample instance", sizeof (p86_sample));
 			PMD_SetError (errormsg);
-			return newData; /* TODO see header for problem with this */
+			return NULL;
 		}
 		memcpy (newSample, &tempSample, sizeof (p86_sample));
-		newData.samples[i] = newSample;
+		tempData.samples[i] = newSample;
 	}
 
-	P86_Validate (&newData);
-	P86_Print (&newData);
+	MALLOC_CHECK (newData, sizeof (p86_struct)) {
+		snprintf (errormsg, PMD_ERRMAXSIZE, pmd_error_malloc, "blank p86_struct instance", sizeof (p86_struct));
+		PMD_SetError (errormsg);
+		/* TODO free previously malloc'd data */
+		return NULL;
+	}
+
+	memcpy (newData, &tempData, sizeof (p86_struct));
+
+	P86_Validate (newData);
+	P86_Print (newData);
 
 	return newData;
 }

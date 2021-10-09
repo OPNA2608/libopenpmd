@@ -52,7 +52,7 @@ int P86_ExportData (p86_struct* p86, void* p86Data);
  *
  * TODO Return pointer instead so a failure can return NULL.
  */
-p86_struct P86_New ();
+p86_struct* P86_New ();
 
 /*
  * Free a P86 struct.

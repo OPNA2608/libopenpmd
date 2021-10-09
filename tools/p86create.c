@@ -7,7 +7,7 @@ int main (int argc, char* argv[]) {
 	char errormsg[PMD_ERRMAXSIZE];
 	int i, dontcare;
 	FILE* fileHandle;
-	p86_struct newBank;
+	p86_struct* newBank;
 	long sampleSize;
 	signed char* sampleBuffer;
 
@@ -22,28 +22,32 @@ int main (int argc, char* argv[]) {
 	}
 
 	newBank = P86_New ();
+	if (newBank == NULL) {
+		/* TODO show PMD_GetError () */
+		return 1;
+	}
 
 	for (i = 1; i < argc; ++i) {
 		printf ("%s...\n", argv[i]);
-	  fileHandle = fopen (argv[i], "rb");
-	  if (fileHandle == NULL) {
-		  printf ("Could not open file %s.\n", argv[i]);
-			P86_Free (&newBank);
-		  return 1;
+		fileHandle = fopen (argv[i], "rb");
+		if (fileHandle == NULL) {
+			printf ("Could not open file %s.\n", argv[i]);
+			P86_Free (newBank);
+			return 1;
 		}
-    fseek (fileHandle, 0, SEEK_END);
+		fseek (fileHandle, 0, SEEK_END);
 		sampleSize = ftell (fileHandle);
 		fseek (fileHandle, 0, SEEK_SET);
 
 		MALLOC_CHECK (sampleBuffer, sampleSize) {
 			snprintf (errormsg, PMD_ERRMAXSIZE, pmd_error_malloc, argv[1], sampleSize);
 			PMD_SetError (errormsg);
-			P86_Free (&newBank);
+			P86_Free (newBank);
 		}
 
-    dontcare = fread (sampleBuffer, sampleSize, sizeof (char), fileHandle);
+		dontcare = fread (sampleBuffer, sampleSize, sizeof (char), fileHandle);
 
-		P86_AddSample (&newBank, sampleSize, sampleBuffer);
+		P86_AddSample (newBank, sampleSize, sampleBuffer);
 		free (sampleBuffer);
 		fclose (fileHandle);
 	}
@@ -52,10 +56,10 @@ int main (int argc, char* argv[]) {
 
 	printf ("Exporting to %s.\n", OUTPUT_DEFAULT);
 	fileHandle = fopen (OUTPUT_DEFAULT, "wb");
-	P86_ExportFile (&newBank, fileHandle);
+	P86_ExportFile (newBank, fileHandle);
 	fclose (fileHandle);
 
-	P86_Free (&newBank);
+	P86_Free (newBank);
 
 	return 0;
 }
