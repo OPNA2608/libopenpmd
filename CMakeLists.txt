@@ -1,13 +1,13 @@
-cmake_minimum_required(VERSION 3.0)
-project(libopenpmd)
+cmake_minimum_required (VERSION 3.0)
+project (libopenpmd C)
 
-set(CMAKE_C_STANDARD 90)
-set(CMAKE_C_STANDARD_REQUIRED TRUE)
+set (CMAKE_C_STANDARD 90)
+set (CMAKE_C_STANDARD_REQUIRED TRUE)
 
-if (MSVC)
+if (${CMAKE_C_COMPILER_ID} MATCHES "MSVC")
     # warning level 4 and all warnings as errors
     # add_compile_options (/W4 /WX)
-else ()
+elseif (${CMAKE_C_COMPILER_ID} MATCHES "GNU|\\.*Clang|\\.*LLVM")
     # lots of warnings and all warnings as errors
     add_compile_options (-Wall -Wextra -pedantic -Werror -pedantic-errors)
 endif ()
