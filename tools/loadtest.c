@@ -14,8 +14,6 @@ int main (int argc, char* argv[]) {
 	signed char* newSampleData;
 	unsigned int i;
 
-	UNUSED (parsedData);
-
 	if (argc < 2) {
 		p86File = READ_TEST;
 	} else {
