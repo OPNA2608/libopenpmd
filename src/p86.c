@@ -52,59 +52,74 @@ boolean try_file_write_dat (FILE* file, signed char* data, unsigned long* length
  */
 
 /*
- * TODO load file in chunks instead
+ * TODO
+ * * load file in chunks instead
+ * * check for P86_MAGIC
  */
-p86_struct P86_ImportFile (FILE* p86File) {
+p86_struct* P86_ImportFile (FILE* p86File) {
 	char errormsg[PMD_ERRMAXSIZE];
-	unsigned int i, dontcare;
+	unsigned int i, j, dontcare;
 	long curpos;
+	p86_struct* parsedData;
 	p86_sample* parsedSample;
 	signed char* buffer;
 	unsigned long sample_start = 0;
 	unsigned long sample_length = 0;
 	long startpos = ftell (p86File);
-	p86_sample tempSample = { 0 };
-	p86_struct parsedData = { 0 };
+
+	MALLOC_CHECK (parsedData, sizeof (p86_struct)) {
+		snprintf (errormsg, PMD_ERRMAXSIZE, pmd_error_malloc, "imported p86_struct", sizeof (p86_struct));
+		PMD_SetError (errormsg);
+		return NULL;
+	}
 
 	fseek (p86File, 0xC, SEEK_CUR);
-	parsedData.version = fgetc (p86File);
+	parsedData->version = fgetc (p86File);
 
-	/* We ignore the bank's total length field. */
+	/* TODO dont ignore the bank's total length field! */
 	fseek (p86File, 3, SEEK_CUR);
 
 	for (i = 0; i <= 255; ++i) {
-		tempSample.id = i;
+		MALLOC_CHECK (parsedSample, sizeof (p86_sample)) {
+			for (j = --i; j > i; --j) {
+				P86_FreeSample (parsedData->samples[j]);
+			}
+			free (parsedData);
+			snprintf (errormsg, PMD_ERRMAXSIZE, pmd_error_malloc, "imported p86_sample struct", sizeof (p86_sample));
+			PMD_SetError (errormsg);
+			return NULL;
+		}
+		parsedSample->id = i;
 
 		dontcare = fread (&sample_start, 3, 1, p86File);
 		dontcare = fread (&sample_length, 3, 1, p86File);
-		sample_length = sample_length & P86_LENGTHMAX;
-		tempSample.length = sample_length;
+		sample_length = sample_length & P86_LENGTHMAX; /* ? */
+		parsedSample->length = sample_length;
 
 		if (sample_length > 0) {
-			curpos = ftell (p86File);
-			fseek (p86File, startpos + sample_start, SEEK_SET);
 			MALLOC_CHECK (buffer, sample_length) {
+				free (parsedSample);
+				for (j = --i; j > i; --j) {
+					P86_FreeSample (parsedData->samples[j]);
+				}
+				free (parsedData);
 				snprintf (errormsg, PMD_ERRMAXSIZE, pmd_error_malloc, "imported sample data", sample_length);
 				PMD_SetError (errormsg);
-        return parsedData; /* TODO BAD! */
+				return NULL;
 			}
+			curpos = ftell (p86File);
+			fseek (p86File, startpos + sample_start, SEEK_SET);
 			dontcare = fread (buffer, sample_length, sizeof (char), p86File);
-			tempSample.data = (signed char*) buffer;
+			parsedSample->data = buffer;
 			fseek (p86File, curpos, SEEK_SET);
 		}
-		MALLOC_CHECK (parsedSample, sizeof (p86_sample)) {
-			snprintf (errormsg, PMD_ERRMAXSIZE, pmd_error_malloc, "imported p86_sample struct", sizeof (p86_sample));
-			PMD_SetError (errormsg);
-			return parsedData; /* TODO BAD! */
-		}
-		memcpy (parsedSample, &tempSample, sizeof (p86_sample));
-		parsedData.samples[i] = parsedSample;
+		parsedData->samples[i] = parsedSample;
 	}
 
 	printf ("Blub: %u\n", dontcare);
 
-	P86_Validate (&parsedData);
-	P86_Print (&parsedData);
+	P86_Validate (parsedData);
+	P86_Print (parsedData);
 
 	return parsedData;
 }
@@ -162,38 +177,33 @@ err:
 #undef TRY_WRITE_GOTO_ERR
 
 p86_struct* P86_New () {
-	unsigned int i;
+	unsigned int i, j;
 	char errormsg[PMD_ERRMAXSIZE];
 	p86_sample* newSample;
-	p86_sample tempSample = { 0 };
 	p86_struct* newData;
-	p86_struct tempData;
-
-	tempData.version = '\x11';
-
-	for (i = 0; i <= 255; ++i) {
-		tempSample.id = i;
-		tempSample.length = 0;
-
-		MALLOC_CHECK (newSample, sizeof (p86_sample)) {
-			snprintf (errormsg, PMD_ERRMAXSIZE, pmd_error_malloc, "blank p86_sample instance", sizeof (p86_sample));
-			PMD_SetError (errormsg);
-			return NULL;
-		}
-		memcpy (newSample, &tempSample, sizeof (p86_sample));
-		tempData.samples[i] = newSample;
-	}
 
 	MALLOC_CHECK (newData, sizeof (p86_struct)) {
 		snprintf (errormsg, PMD_ERRMAXSIZE, pmd_error_malloc, "blank p86_struct instance", sizeof (p86_struct));
 		PMD_SetError (errormsg);
-		/* TODO free previously malloc'd data */
 		return NULL;
 	}
+	newData->version = '\x11';
 
-	memcpy (newData, &tempData, sizeof (p86_struct));
+	for (i = 0; i <= 255; ++i) {
+		MALLOC_CHECK (newSample, sizeof (p86_sample)) {
+			for (j = --i; j > i; --j) {
+				P86_FreeSample (newData->samples[j]);
+			}
+			free (newData);
+			snprintf (errormsg, PMD_ERRMAXSIZE, pmd_error_malloc, "blank p86_sample instance", sizeof (p86_sample));
+			PMD_SetError (errormsg);
+			return NULL;
+		}
+		newSample->id = i;
+		newSample->length = 0;
+		newData->samples[i] = newSample;
+	}
 
-	P86_Validate (newData);
 	P86_Print (newData);
 
 	return newData;
@@ -205,6 +215,7 @@ void P86_Free (p86_struct* p86) {
 	for (i = 0; i <= 255; ++i) {
 		P86_FreeSample (p86->samples[i]);
 	}
+	free (p86);
 }
 
 void P86_FreeSample (p86_sample* sample) {
@@ -214,28 +225,23 @@ void P86_FreeSample (p86_sample* sample) {
 	free (sample);
 }
 
-#define CHECK_VALIDITY() if (valid) {\
-	printf ("Data failed validation check! Continuing.\n"); \
-	valid = false; \
-}
+#define INVALID() \
+	printf ("%s\n", p86_invalid); \
+	return 1;
 int P86_Validate (p86_struct* p86) {
 	const char* p86_error_length_sample = "Sample at ID #%03u (%luB) exceeds per-sample length limit (%luB)";
 	const char* p86_error_length_total = "Total length (%luB) exceeds maximum length limit (%luB)";
+	const char* p86_invalid = "Data failed validation check! Check PMD_GetError() for more details.";
 	char errormsg[PMD_ERRMAXSIZE];
 	unsigned int i;
 	unsigned long totalSize;
-	boolean valid = true;
-
-	/*
-	 * FIXME Errors in this function overwrite each other since switching to global error functions!
-	 */
 
 	printf ("Checking sample lengths.\n");
 	for (i = 0; i <= 255; ++i) {
 		if (p86->samples[i]->length > P86_LENGTHMAX) {
 			snprintf (errormsg, PMD_ERRMAXSIZE, p86_error_length_sample, i, p86->samples[i]->length, P86_LENGTHMAX);
 			PMD_SetError (errormsg);
-			CHECK_VALIDITY();
+			INVALID();
 		}
 	}
 
@@ -244,89 +250,52 @@ int P86_Validate (p86_struct* p86) {
 	if (totalSize > P86_LENGTHMAX) {
 		snprintf (errormsg, PMD_ERRMAXSIZE, p86_error_length_total, totalSize, P86_LENGTHMAX);
 		PMD_SetError (errormsg);
-		CHECK_VALIDITY();
+		INVALID();
 	}
 
-	if (valid) {
-		printf ("Data is valid!\n");
-		return 0;
-	} else {
-		printf ("See PMD_GetError() for reason for failed validity check.\n");
-		return 1;
-	}
+	printf ("Data is valid!\n");
+	return 0;
 }
-#undef CHECK_VALIDITY
+#undef INVALID
 
 int P86_SetSample (p86_struct* p86, unsigned char id, unsigned long length, signed char* data) {
 	char errormsg[PMD_ERRMAXSIZE];
 	signed char* buffer;
 	p86_sample* newSample;
-	p86_sample tempSample = { 0 };
 
-	tempSample.id = id;
-	tempSample.length = length;
+	MALLOC_CHECK (newSample, sizeof (p86_sample)) {
+		snprintf (errormsg, PMD_ERRMAXSIZE, pmd_error_malloc, "p86_sample struct", sizeof (p86_sample));
+		PMD_SetError (errormsg);
+		return 2;
+	}
+	newSample->id = id;
+	newSample->length = length;
 
 	MALLOC_CHECK (buffer, length) {
+		free (newSample);
 		snprintf (errormsg, PMD_ERRMAXSIZE, pmd_error_malloc, "sample data buffer", length);
 		PMD_SetError (errormsg);
 		return 1;
 	}
   memcpy (buffer, data, length);
-  tempSample.data = buffer;
+  newSample->data = buffer;
 
-  MALLOC_CHECK (newSample, sizeof (p86_sample)) {
-		snprintf (errormsg, PMD_ERRMAXSIZE, pmd_error_malloc, "p86_sample struct", sizeof (p86_sample));
-		PMD_SetError (errormsg);
-		if (buffer != NULL) {
-			free (buffer);
-		}
-		return 2;
-	}
-  memcpy (newSample, &tempSample, sizeof (p86_sample));
-	if (P86_IsSet (p86, id) == 0) {
-	  free (p86->samples[id]->data);
-	}
-	free (p86->samples[id]);
+	P86_FreeSample (p86->samples[id]);
   p86->samples[id] = newSample;
 
-	P86_Validate (p86);
 	P86_Print (p86);
 
 	return 0;
 }
 
-p86_sample* P86_GetSample (p86_struct* p86, unsigned char id) {
+const p86_sample* P86_GetSample (p86_struct* p86, unsigned char id) {
 	const char* p86_error_id_missing = "Requested sample ID is not set";
-	char errormsg[PMD_ERRMAXSIZE];
-	signed char* buffer;
-	p86_sample* copiedSample;
-	p86_sample tempSample = { 0 };
 
 	if (P86_IsSet (p86, id) > 0) {
 		PMD_SetError (p86_error_id_missing);
 		return NULL;
 	}
-
-	tempSample.id = id;
-	tempSample.length = p86->samples[id]->length;
-
-	MALLOC_CHECK (buffer, tempSample.length) {
-		snprintf (errormsg, PMD_ERRMAXSIZE, pmd_error_malloc, "sample data buffer", tempSample.length);
-		PMD_SetError (errormsg);
-		return NULL;
-	}
-	memcpy (buffer, p86->samples[id]->data, tempSample.length);
-	tempSample.data = buffer;
-
-	MALLOC_CHECK (copiedSample, sizeof (p86_sample)) {
-		snprintf (errormsg, PMD_ERRMAXSIZE, pmd_error_malloc, "p86_sample struct", sizeof (p86_sample));
-		PMD_SetError (errormsg);
-		free (buffer);
-		return NULL;
-	}
-	memcpy (copiedSample, &tempSample, sizeof (p86_sample));
-
-	return copiedSample;
+	return p86->samples[id];
 }
 
 int P86_AddSample (p86_struct* p86, unsigned long length, signed char* data) {
@@ -350,7 +319,6 @@ int P86_UnsetSample (p86_struct* p86, unsigned char id) {
 		p86->samples[id]->length = 0;
 	}
 
-	P86_Validate (p86);
 	P86_Print (p86);
 
 	return 0;
@@ -360,7 +328,6 @@ int P86_RemoveSample (p86_struct* p86, unsigned char id) {
 	char errormsg[PMD_ERRMAXSIZE];
 	unsigned int i;
 	p86_sample* newSample;
-	p86_sample tempSample = { 0 };
 
 	P86_UnsetSample (p86, id);
 
@@ -369,19 +336,17 @@ int P86_RemoveSample (p86_struct* p86, unsigned char id) {
 		--p86->samples[i]->id;
 	}
 
-	tempSample.id = 255;
-	tempSample.length = 0;
-	tempSample.data = NULL;
-
 	MALLOC_CHECK (newSample, sizeof (p86_sample)) {
 		snprintf (errormsg, PMD_ERRMAXSIZE, pmd_error_malloc, "p86_sample struct", sizeof (p86_sample));
 		PMD_SetError (errormsg);
 		return 1;
 	}
-	memcpy (newSample, &tempSample, sizeof (p86_sample));
+	newSample->id = 255;
+	newSample->length = 0;
+	newSample->data = NULL;
+
 	p86->samples[255] = newSample;
 
-	P86_Validate (p86);
 	P86_Print (p86);
 
 	return 0;
@@ -400,7 +365,6 @@ int P86_SwitchSamples (p86_struct* p86, unsigned char from, unsigned char to) {
 	p86->samples[from]->length = tempLength;
 	p86->samples[from]->data = tempData;
 
-	P86_Validate (p86);
 	P86_Print (p86);
 
 	return 0;

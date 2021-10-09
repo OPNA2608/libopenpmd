@@ -22,14 +22,14 @@ extern const unsigned long P86_LENGTHMAX;
 /*
  * Reads a P86 file from FILE pointer p86File and parses its contents into a P86 struct.
  */
-p86_struct P86_ImportFile (FILE* p86File);
+p86_struct* P86_ImportFile (FILE* p86File);
 
 /*
  * TODO Implement
  *
  * Reads a P86 file from void pointer p86Data and parses its contents into a P86 struct.
  */
-p86_struct P86_ImportData (void* p86Data);
+p86_struct* P86_ImportData (void* p86Data);
 
 /*
  * Writes a P86 file from p86 pointer p86 to FILE pointer p86File.
@@ -84,11 +84,10 @@ int P86_Validate (p86_struct* p86);
 int P86_SetSample (p86_struct* p86, unsigned char id, unsigned long length, signed char* data);
 
 /*
- * Get a pointer to a copy of the sample data with the specified ID.
+ * Get a pointer to the sample data with the specified ID.
  * Returns NULL if ID is not set.
- * You're responsible for freeing the returned pointer!
  */
-p86_sample* P86_GetSample (p86_struct* p86, unsigned char id);
+const p86_sample* P86_GetSample (p86_struct* p86, unsigned char id);
 
 /*
  * Map sample data to next free ID.

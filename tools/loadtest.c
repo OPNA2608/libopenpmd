@@ -10,7 +10,7 @@
 int main (int argc, char* argv[]) {
 	char* p86File;
 	FILE* test;
-	p86_struct parsedData;
+	p86_struct* parsedData;
 	signed char* newSampleData;
 	unsigned int i;
 
@@ -32,19 +32,24 @@ int main (int argc, char* argv[]) {
 	parsedData = P86_ImportFile (test);
 	fclose (test);
 
+	if (parsedData == NULL) {
+		/* TODO print PMD_GetError() output */
+		return 1;
+	}
+
 	newSampleData = malloc (SAMPLE_TEST_LENGTH);
 	for (i = 0; i < SAMPLE_TEST_LENGTH; ++i) {
 		newSampleData[i] = (i % 2 == 0) ? 127 : -128;
 	}
 
 	printf ("Testing sample adding (ID #%03u with default bank).\n", SAMPLE_TEST_ID_ADD);
-	if (P86_AddSample (&parsedData, SAMPLE_TEST_LENGTH, newSampleData) > 0) {
+	if (P86_AddSample (parsedData, SAMPLE_TEST_LENGTH, newSampleData) > 0) {
 		printf ("Adding sample data failed.\n");
 		return 1;
 	}
 
 	printf ("Testing sample setting (ID #%03u with default bank).\n", SAMPLE_TEST_ID_SET);
-	if (P86_SetSample (&parsedData, SAMPLE_TEST_ID_SET, SAMPLE_TEST_LENGTH, newSampleData) > 0) {
+	if (P86_SetSample (parsedData, SAMPLE_TEST_ID_SET, SAMPLE_TEST_LENGTH, newSampleData) > 0) {
 		printf ("Setting sample data failed.\n");
 		return 1;
 	}
@@ -53,10 +58,10 @@ int main (int argc, char* argv[]) {
 
 	printf ("Testing exporting to %s.\n", WRITE_TEST);
 	test = fopen (WRITE_TEST, "wb");
-	P86_ExportFile (&parsedData, test);
+	P86_ExportFile (parsedData, test);
 	fclose (test);
 
-	P86_Free (&parsedData);
+	P86_Free (parsedData);
 
 	return 0;
 }
