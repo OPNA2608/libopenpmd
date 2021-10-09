@@ -1,3 +1,8 @@
 32-bit DOS w/ DOS4/GW:
-INCLUDE=/nix/store/kghw7gcsfamqnddgq0vs031bh81ngby0-open-watcom-v2-unstable-2021-05-19/lib/openwatcom/h wcl386 -bcl=DOS4G main.c p86.c
-(and copy /nix/store/kghw7gcsfamqnddgq0vs031bh81ngby0-open-watcom-v2-unstable-2021-05-19/lib/openwatcom/binw/dos4gw.exe to same directory as the executable to run in dosbox)
+mkdir build
+cd build
+unset CC
+unset CXX
+cmake -G "Watcom WMake" -DCMAKE_SYSTEM_NAME=DOS -DCMAKE_SYSTEM_PROCESSOR=X86 ..
+wmake
+(and copy ${WATCOM}/binw/dos4gw.exe to CWD to run in dosbox)
