@@ -30,7 +30,7 @@ stdenv.mkDerivation rec {
       toilet -f wideterm -F border $*
     }
     run_test() {
-      valgrind --leak-check=full -s $* 2>&1 | tee log
+      valgrind --leak-check=full --track-origins=yes -s $* 2>&1 | tee log
       grep -q 'ERROR SUMMARY: 0 errors' log || exit 1
     }
 
