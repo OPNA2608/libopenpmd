@@ -3,7 +3,7 @@
 #include <string.h>
 #include <limits.h>
 
-const char P86_MAGIC[13] = "PCM86 DATA\n\0";
+const char P86_MAGIC[12] = "PCM86 DATA\n\0";
 const unsigned short P86_HEADERLENGTH = 0x0610;
 const unsigned long P86_LENGTHMAX = 0xFFFFFF;
 
@@ -54,17 +54,20 @@ boolean try_file_write_dat (FILE* file, signed char* data, unsigned long* length
 /*
  * TODO
  * * load file in chunks instead
- * * check for P86_MAGIC
  */
+#define READ_CHECK(var, elemsize, writecounter) \
+	locReadCounter = fread (var, elemsize, writecounter, p86File); \
+	if (locReadCounter != writecounter)
 p86_struct* P86_ImportFile (FILE* p86File) {
 	char errormsg[PMD_ERRMAXSIZE];
-	unsigned int i, j, dontcare;
+	unsigned int i, j, locReadCounter;
 	long curpos;
 	p86_struct* parsedData;
 	p86_sample* parsedSample;
 	signed char* buffer;
 	unsigned long sample_start = 0;
 	unsigned long sample_length = 0;
+	unsigned long parsedLength = 0;
 	long startpos = ftell (p86File);
 
 	MALLOC_CHECK (parsedData, sizeof (p86_struct)) {
@@ -73,11 +76,35 @@ p86_struct* P86_ImportFile (FILE* p86File) {
 		return NULL;
 	}
 
-	fseek (p86File, 0xC, SEEK_CUR);
+	/* TODO use a separate buffer? */
+	MALLOC_CHECK (buffer, 13) {
+		free (parsedData);
+		snprintf (errormsg, PMD_ERRMAXSIZE, pmd_error_malloc, "P86 file magic", 13);
+		PMD_SetError (errormsg);
+		return NULL;
+	}
+	READ_CHECK (buffer, sizeof (char), 12) {
+		free (buffer);
+		free (parsedData);
+		PMD_SetError (pmd_error_eof);
+		return NULL;
+	}
+	if (memcmp (P86_MAGIC, (char*)buffer, 12) != 0) {
+		free (buffer);
+		free (parsedData);
+		snprintf (errormsg, PMD_ERRMAXSIZE, "P86 file header mismatch");
+		PMD_SetError (errormsg);
+		return NULL;
+	}
+	free (buffer);
+
 	parsedData->version = fgetc (p86File);
 
-	/* TODO dont ignore the bank's total length field! */
-	fseek (p86File, 3, SEEK_CUR);
+	READ_CHECK (&parsedLength, 3, 1) {
+		free (parsedData);
+		PMD_SetError (pmd_error_eof);
+		return NULL;
+	}
 
 	for (i = 0; i <= 255; ++i) {
 		MALLOC_CHECK (parsedSample, sizeof (p86_sample)) {
@@ -91,9 +118,24 @@ p86_struct* P86_ImportFile (FILE* p86File) {
 		}
 		parsedSample->id = i;
 
-		dontcare = fread (&sample_start, 3, 1, p86File);
-		dontcare = fread (&sample_length, 3, 1, p86File);
-		sample_length = sample_length & P86_LENGTHMAX; /* ? */
+		READ_CHECK (&sample_start, 3, 1) {
+			free (parsedSample);
+			for (j = --i; j > i; --j) {
+				P86_FreeSample (parsedData->samples[j]);
+			}
+			free (parsedData);
+			PMD_SetError (pmd_error_eof);
+			return NULL;
+		}
+		READ_CHECK (&sample_length, 3, 1) {
+			free (parsedSample);
+			for (j = --i; j > i; --j) {
+				P86_FreeSample (parsedData->samples[j]);
+			}
+			free (parsedData);
+			PMD_SetError (pmd_error_eof);
+			return NULL;
+		}
 		parsedSample->length = sample_length;
 
 		if (sample_length > 0) {
@@ -109,20 +151,38 @@ p86_struct* P86_ImportFile (FILE* p86File) {
 			}
 			curpos = ftell (p86File);
 			fseek (p86File, startpos + sample_start, SEEK_SET);
-			dontcare = fread (buffer, sample_length, sizeof (char), p86File);
+			READ_CHECK (buffer, sizeof (char), sample_length) {
+				free (parsedSample);
+				for (j = --i; j > i; --j) {
+					P86_FreeSample (parsedData->samples[j]);
+				}
+				free (parsedData);
+				PMD_SetError (pmd_error_eof);
+				return NULL;
+			}
 			parsedSample->data = buffer;
 			fseek (p86File, curpos, SEEK_SET);
 		}
 		parsedData->samples[i] = parsedSample;
 	}
 
-	printf ("Blub: %u\n", dontcare);
-
-	P86_Validate (parsedData);
+	if (P86_Validate (parsedData) != 0) {
+		P86_Free (parsedData);
+		/* propagating validation error */
+		return NULL;
+	}
+	/* extra validation */
+	if (parsedLength != P86_GetTotalLength (parsedData)) {
+		P86_Free (parsedData);
+		snprintf (errormsg, PMD_ERRMAXSIZE, "Parsed total length does not match specified total length");
+		PMD_SetError (errormsg);
+		return NULL;
+	}
 	P86_Print (parsedData);
 
 	return parsedData;
 }
+#undef READ_CHECK
 
 #define TRY_WRITE_GOTO_ERR(func, file, text) if (!func (file, text)) goto err;
 #define WRITE_S(file, text) TRY_WRITE_GOTO_ERR(try_file_write_s, file, text)

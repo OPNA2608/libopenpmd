@@ -31,7 +31,7 @@ int main (int argc, char* argv[]) {
 	fclose (test);
 
 	if (parsedData == NULL) {
-		/* TODO print PMD_GetError() output */
+		printf ("ERROR: %s\n", PMD_GetError());
 		return 1;
 	}
 
