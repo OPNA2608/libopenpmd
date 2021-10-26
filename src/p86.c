@@ -53,7 +53,7 @@ boolean try_file_write_dat (FILE* file, signed char* data, unsigned long* length
 
 /*
  * TODO
- * * load file in chunks instead
+ * * load file in chunks instead?
  */
 #define READ_CHECK(var, elemsize, writecounter) \
 	locReadCounter = fread (var, elemsize, writecounter, p86File); \

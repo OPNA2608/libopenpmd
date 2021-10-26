@@ -26,6 +26,7 @@ let
           vim-indent-guides
           vim-better-whitespace
           lightline-vim
+          vimsence
         ];
       };
     };
