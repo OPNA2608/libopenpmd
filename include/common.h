@@ -19,6 +19,7 @@ typedef enum {false, true} boolean;
 
 extern const char* pmd_error_malloc;
 extern const char* pmd_error_eof;
+extern const char* pmd_error_write;
 
 void PMD_SetError (const char* errorMsg);
 

@@ -30,7 +30,7 @@ int main (int argc, char* argv[]) {
 	fclose (fileHandle);
 
 	if (p86Bank == NULL) {
-		/* TODO print PMD_GetError() output */
+		printf ("%s\n", PMD_GetError());
 		return 1;
 	}
 

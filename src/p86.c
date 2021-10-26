@@ -8,50 +8,6 @@ const unsigned short P86_HEADERLENGTH = 0x0610;
 const unsigned long P86_LENGTHMAX = 0xFFFFFF;
 
 /*
- * Start Helpers
- */
-
-boolean try_file_write_c (FILE* file, char* text) {
-	fputc (*text, file);
-	if (ferror (file)) {
-		printf ("Error occurred while writing to file.\n");
-		return false;
-	}
-	return true;
-}
-
-boolean try_file_write_s (FILE* file, char* text) {
-	fputs (text, file);
-	if (ferror (file)) {
-		printf ("Error occurred while writing to file.\n");
-		return false;
-	}
-	return true;
-}
-
-boolean try_file_write_l (FILE* file, unsigned long* length) {
-	fwrite (length, 3, 1, file);
-	if (ferror (file)) {
-		printf ("Error occurred while writing to file.\n");
-		return false;
-	}
-	return true;
-}
-
-boolean try_file_write_dat (FILE* file, signed char* data, unsigned long* length) {
-	fwrite (data, *length, sizeof (char), file);
-	if (ferror (file)) {
-		printf ("Error occurred while writing to file.\n");
-		return false;
-	}
-	return true;
-}
-
-/*
- * End Helpers
- */
-
-/*
  * TODO
  * * load file in chunks instead?
  */
@@ -184,11 +140,12 @@ p86_struct* P86_ImportFile (FILE* p86File) {
 }
 #undef READ_CHECK
 
-#define TRY_WRITE_GOTO_ERR(func, file, text) if (!func (file, text)) goto err;
-#define WRITE_S(file, text) TRY_WRITE_GOTO_ERR(try_file_write_s, file, text)
-#define WRITE_C(file, text) TRY_WRITE_GOTO_ERR(try_file_write_c, file, text)
-#define WRITE_L(file, length) TRY_WRITE_GOTO_ERR(try_file_write_l, file, length)
-#define WRITE_DAT(file, data, length) if (!try_file_write_dat (file, data, length)) goto err;
+#define WRITE_CHECK(file, data, elemsize, writecounter) \
+	fwrite (data, elemsize, writecounter, file); \
+	if (ferror (file)) { \
+		PMD_SetError (pmd_error_write); \
+		return 1; \
+	}
 int P86_ExportFile (p86_struct* p86, FILE* p86File) {
 	unsigned long start, length, startWrite, lengthWrite;
 	unsigned int i;
@@ -196,12 +153,11 @@ int P86_ExportFile (p86_struct* p86, FILE* p86File) {
 	P86_Validate (p86);
 	P86_Print (p86);
 
-	WRITE_S (p86File, (char*) P86_MAGIC)
-	WRITE_C (p86File, "\0")
-	WRITE_C (p86File, "\x11")
+	WRITE_CHECK (p86File, P86_MAGIC, sizeof (char), 12);
+	WRITE_CHECK (p86File, "\x11", sizeof (char), 1);
 
 	length = P86_GetTotalLength (p86);
-	WRITE_L (p86File, &length);
+	WRITE_CHECK (p86File, &length, sizeof (char), 3);
 
 	start = P86_HEADERLENGTH;
 	for (i = 0; i <= 255; ++i) {
@@ -214,27 +170,19 @@ int P86_ExportFile (p86_struct* p86, FILE* p86File) {
 			startWrite = 0;
 			lengthWrite = 0;
 		}
-		WRITE_L (p86File, &startWrite);
-		WRITE_L (p86File, &lengthWrite);
+		WRITE_CHECK (p86File, &startWrite, sizeof (char), 3);
+		WRITE_CHECK (p86File, &lengthWrite, sizeof (char), 3);
 	}
 	for (i = 0; i <= 255; ++i) {
 		length = p86->samples[i]->length;
 		if (length > 0) {
-			WRITE_DAT (p86File, p86->samples[i]->data, &length);
+			WRITE_CHECK (p86File, p86->samples[i]->data, sizeof (char), length);
 		}
 	}
 
 	return 0;
-
-err:
-	printf ("Failed to write to file.\n");
-	return 1;
 }
-#undef WRITE_DAT
-#undef WRITE_L
-#undef WRITE_C
-#undef WRITE_S
-#undef TRY_WRITE_GOTO_ERR
+#undef WRITE_CHECK
 
 p86_struct* P86_New () {
 	unsigned int i, j;

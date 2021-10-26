@@ -36,7 +36,7 @@ p86_struct* P86_ImportData (void* p86Data);
  *
  * Possible return values:
  * * 0 - No Error
- * * 1 - Some error (TODO more specific error codes!)
+ * * 1 - Failed to write to file
  */
 int P86_ExportFile (p86_struct* p86, FILE* p86File);
 
