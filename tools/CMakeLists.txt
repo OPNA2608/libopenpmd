@@ -1,4 +1,4 @@
-project(tools)
+project(tools C)
 
 add_executable (loadtest loadtest.c)
 target_link_libraries (loadtest PRIVATE openpmd)

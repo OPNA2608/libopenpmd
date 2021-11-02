@@ -53,7 +53,7 @@ int main (int argc, char* argv[]) {
 			  return 1;
 			}
 
-			fwrite (p86Sample->data, p86Sample->length, sizeof (char), fileHandle);
+			fwrite (p86Sample->typeData.mem.data, p86Sample->length, sizeof (char), fileHandle);
 			if (ferror (fileHandle)) {
 				printf ("Error occurred while writing to file.\n");
 				fclose (fileHandle);

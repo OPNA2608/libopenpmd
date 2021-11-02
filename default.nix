@@ -16,8 +16,8 @@ stdenv.mkDerivation rec {
 
   src = ./.;
 
-  preConfigure = ''
-    rm -rf .git build/
+  postUnpack = ''
+    rm -rf $sourceRoot/{.git,build}/
   '';
 
   nativeBuildInputs = [ cmake toilet valgrind ];
@@ -33,22 +33,33 @@ stdenv.mkDerivation rec {
       valgrind --leak-check=full --track-origins=yes -s $* 2>&1 | tee log
       grep -q 'ERROR SUMMARY: 0 errors' log || exit 1
     }
+    compare_two_hashes() {
+      hash1="$(sha256sum "$1")"
+      hash2="$(sha256sum "$2")"
+
+      echo $hash1
+      echo $hash2
+      if [[ "$(echo "$hash1" | cut -d' ' -f1)" != "$(echo "$hash2" | cut -d' ' -f1)" ]]; then
+        echo "Hashes don't match!"
+        exit 1
+      fi
+    }
 
     print LOADTEST
-    run_test ./tools/loadtest
+    run_test ./tools/loadtest ../examples/P86/RC1.P86
+
+    print COMPARING ORIGINAL AGAINST EXPORT TESTS
+    compare_two_hashes ../examples/P86/RC1.P86 TEST_MEM.P86
+    compare_two_hashes ../examples/P86/RC1.P86 TEST_FIL.P86
 
     print P86EXTRACT
-    run_test ./tools/p86extract test.P86
+    run_test ./tools/p86extract TEST_MEM.P86
 
     print P86CREATE
     run_test ./tools/p86create TEST.***.RAW
 
     print COMPARING HASHES
-    sha256sum test.P86 TEST.P86
-    if [[ "$(sha256sum test.P86 | cut -d' ' -f1)" != "$(sha256sum TEST.P86 | cut -d' ' -f1)" ]]; then
-      echo "Hashes don't match!"
-      exit 1
-    fi
+    compare_two_hashes TEST_MEM.P86 TEST.P86
 
     touch $out
   '';
