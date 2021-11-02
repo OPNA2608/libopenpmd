@@ -16,12 +16,13 @@ typedef enum {false, true} boolean;
 #endif
 
 #define PMD_ERRMAXSIZE 1024
+#define PMD_BUFFERSIZE 4096
 
 extern const char* pmd_error_malloc;
 extern const char* pmd_error_eof;
 extern const char* pmd_error_write;
 
-void PMD_SetError (const char* errorMsg);
+void PMD_SetError (const char* errorMsg, ...);
 
 const char* PMD_GetError ();
 

@@ -4,10 +4,30 @@
 #include <stdio.h>
 #include "common.h"
 
+typedef enum {
+	MEM, FIL
+} p86_sample_type;
+
+typedef struct {
+	signed char* data;
+} p86_sample_mem;
+
+typedef struct {
+	FILE* file;
+	long fileStart;
+	unsigned long offset;
+} p86_sample_fil;
+
+typedef union {
+	p86_sample_mem mem;
+	p86_sample_fil fil;
+} p86_sample_data;
+
 typedef struct {
 	unsigned char id;
+	p86_sample_type type;
 	unsigned long length;
-	signed char* data;
+	p86_sample_data typeData;
 } p86_sample;
 
 typedef struct {
@@ -21,8 +41,19 @@ extern const unsigned long P86_LENGTHMAX;
 
 /*
  * Reads a P86 file from FILE pointer p86File and parses its contents into a P86 struct.
+ *
+ * This function will load all samples into memory. On a system with minimal amounts of memory, P86_ImportFileSlim may
+ * be preferred.
  */
 p86_struct* P86_ImportFile (FILE* p86File);
+
+/*
+ * Reads a P86 file from FILE pointer p86File and parses its contents into a p86File-referencing P86 struct.
+ *
+ * This function will only parse the sample locations & store them as as FILE* + offset pairs.
+ * You are responsible for keeping the handed-in FILE* opened!
+ */
+p86_struct* P86_ImportFileSlim (FILE* p86File);
 
 /*
  * TODO Implement
@@ -37,8 +68,10 @@ p86_struct* P86_ImportData (void* p86Data);
  * Possible return values:
  * * 0 - No Error
  * * 1 - Failed to write to file
+ * * 2 - Failed to read from file (for slim pmd_sample loading)
+ * * 3 - file read buffer allocation failure
  */
-int P86_ExportFile (p86_struct* p86, FILE* p86File);
+int P86_ExportFile (const p86_struct* p86, FILE* p86File);
 
 /*
  * TODO Implement
@@ -49,8 +82,6 @@ int P86_ExportData (p86_struct* p86, void* p86Data);
 
 /*
  * Creates a new blank P86 bank in memory.
- *
- * TODO Return pointer instead so a failure can return NULL.
  */
 p86_struct* P86_New ();
 
@@ -71,7 +102,7 @@ void P86_FreeSample (p86_sample* sample);
  * * 0 - No Error
  * * 1 - Some error (TODO more specific error codes!)
  */
-int P86_Validate (p86_struct* p86);
+int P86_Validate (const p86_struct* p86);
 
 /*
  * Map sample data to specified ID.
@@ -126,25 +157,25 @@ int P86_SwitchSample (p86_struct* p86, unsigned char from, unsigned char to);
 /*
  * Checks if ID id is set (length != 0).
  */
-int P86_IsSet (p86_struct* p86, unsigned char id);
+int P86_IsSet (const p86_struct* p86, unsigned char id);
 
 /*
  * Prints details about P86 data.
  */
-void P86_Print (p86_struct* p86);
+void P86_Print (const p86_struct* p86);
 
 /*
  * Prints the string representation ("major.minor") of a P86 version struct into the supplied buf variable.
  *
  * Returns the return value of sprintf.
  */
-int P86_GetVersionString (unsigned char* version, char* buf);
+int P86_GetVersionString (const unsigned char* version, char* buf);
 
 /*
  * Calculates the raw size needed for a p86_struct p86 if it were to be written to a file.
  * This may exceed actual P86 size limitations with future bank optimisations.
  * (Only data type limits - unsigned long - are checked against)
  */
-unsigned long P86_GetTotalLength (p86_struct* p86);
+unsigned long P86_GetTotalLength (const p86_struct* p86);
 
 #endif /* P86_H */
