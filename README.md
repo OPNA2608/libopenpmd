@@ -1,8 +1,12 @@
 # libopenpmd
 
-A WIP project to write an open-source C library capable of parsing both the MML and the compiled versions of the PMD sound driver's music files.
+A WIP project to write an open-source C library capable of parsing both the MML and the compiled versions of the PMD
+sound driver's music files.
 
-The aim is to write a stripped-down, cross-platform - Windows, macOS & Linux (and ideally down to DOS on actual PC-98s) - library for parsing and handling PMD files. This goal is being approached by doing a from-the-ground-up, hopefully clean effort to understand and document the binary format based on my own experiments with the official manual and compiler with the help of prior documentation efforts.
+The aim is to write a stripped-down, cross-platform - Windows, macOS, Linux and DOS on actual PC-98s - library for
+parsing and handling PMD files. This goal is being approached by doing a from-the-ground-up, hopefully clean effort to
+understand and document the binary formats based on my own experiments with the official manual and compiler with the
+help of prior documentation efforts.
 
 ## Roadmap
 
@@ -11,12 +15,12 @@ The aim is to write a stripped-down, cross-platform - Windows, macOS & Linux (an
 - [C] - Can fully parse existing file
 - [B] - Can properly modify & overwrite existing file
 - [A] - Can generate file from scratch, either empty or from supplied data
-- [x] - Full support
+- [x] - Implemented to a satisfactory degree
 
 ---
 
 * [ ] Handle PMD-related bank formats
-  * [B] P86
+  * [A] P86
   * [ ] PPS
   * [ ] PPC
   * [ ] PVI
