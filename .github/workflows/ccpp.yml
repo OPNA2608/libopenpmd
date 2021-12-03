@@ -30,12 +30,15 @@ jobs:
       run: |
         cd $PWD/build
 
-        ./tools/Debug/loadtest
-        mv test.P86 LOADTEST.P86
+        ./tools/Debug/loadtest ../examples/P86/RC1.P86
+        mv TEST_MEM.P86 LOADTEST_MEM.P86
+        mv TEST_FIL.P86 LOADTEST_FIL.P86
 
-        ./tools/Debug/p86extract LOADTEST.P86
+        ./tools/Debug/p86extract LOADTEST_MEM.P86
         ./tools/Debug/p86create TEST.*.RAW
         mv TEST.P86 P86CREATE.P86
 
-        CertUtil -hashfile LOADTEST.P86 MD5
+        CertUtil -hashfile ../examples/P86/RC1.P86 MD5
+        CertUtil -hashfile LOADTEST_MEM.P86 MD5
+        CertUtil -hashfile LOADTEST_MEM.P86 MD5
         CertUtil -hashfile P86CREATE.P86 MD5
