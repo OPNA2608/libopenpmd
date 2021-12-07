@@ -83,24 +83,28 @@ jobs:
       with:
         nix_path: "nixpkgs=channel:nixos-unstable"
 
-    - name: Install dependencies
-      run: |
-        nix-env -f '<nixpkgs>' -i cmake open-watcom-v2 dosbox
-
     - name: Configure
       run: |
+        cat <<EOF >configure.sh
+        #!/usr/bin/env bash
         unset CC
         unset CXX
         cmake -B $PWD/build -G "Watcom WMake" -DCMAKE_BUILD_TYPE=Debug \
           -DCMAKE_SYSTEM_NAME=DOS -DCMAKE_SYSTEM_PROCESSOR=I86
+        EOF
+        chmod +x configure.sh
+
+        nix-shell $PWD/.github/dos-shell.nix --run ./configure.sh
 
     - name: Build
       run: |
-        cmake --build $PWD/build
+        echo "cmake --build $PWD/build" > build.sh
+        chmod +x build.sh
+
+        nix-shell $PWD/.github/dos-shell.nix --run ./build.sh
 
     - name: Test
       run: |
-        export SDL_VIDEODRIVER=dummy
         cat <<EOF >dosbox.config
         MOUNT C $PWD
         C:
@@ -111,7 +115,7 @@ jobs:
         EXIT
         EOF
 
-        dosbox
+        nix-shell $PWD/.github/dos-shell.nix --run dosbox
 
         cat LOAD.LOG
         grep ERROR LOAD.LOG && exit 1
