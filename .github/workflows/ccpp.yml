@@ -106,6 +106,7 @@ jobs:
     - name: Test
       run: |
         cat <<EOF >dosbox.config
+        [autoexec]
         MOUNT C $PWD
         C:
         CD BUILD
@@ -117,6 +118,7 @@ jobs:
 
         nix-shell $PWD/.github/dos-shell.nix --run dosbox
 
+        cd build
         cat LOAD.LOG
         grep ERROR LOAD.LOG && exit 1
         cat EXT.LOG
