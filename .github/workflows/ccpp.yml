@@ -13,8 +13,17 @@ defaults:
     shell: bash
 
 jobs:
-  build:
-    runs-on: windows-latest
+  normal:
+    strategy:
+      matrix:
+        config:
+        - { name: 'Windows', os: windows-latest }
+        - { name: 'macOS', os: macos-latest }
+        - { name: 'Ubuntu', os: ubuntu-latest }
+      fail-fast: false
+
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
 
     steps:
     - name: Checkout
@@ -30,15 +39,33 @@ jobs:
       run: |
         cd $PWD/build
 
-        ./tools/Debug/loadtest ../examples/P86/RC1.P86
+        export TOOLPATH=${PWD}/tools
+        if [ '${{ matrix.config.name }}' == 'Windows' ]; then
+          export TOOLPATH=${TOOLPATH}/Debug
+          function print_hash() {
+            CertUtil -hashfile "$1"
+          }
+        elif [ '${{ matrix.config.name }}' == 'macOS' ]; then
+          function print_hash() {
+            shasum -a 256 "$1"
+          }
+        else
+          function print_hash() {
+            sha256sum "$1"
+          }
+        fi
+        export PATH=${TOOLPATH}:${PATH}
+        export -f print_hash
+
+        loadtest ../examples/P86/RC1.P86
         mv TEST_MEM.P86 LOADTEST_MEM.P86
         mv TEST_FIL.P86 LOADTEST_FIL.P86
 
-        ./tools/Debug/p86extract LOADTEST_MEM.P86
-        ./tools/Debug/p86create TEST.*.RAW
+        p86extract LOADTEST_MEM.P86
+        p86create TEST.*.RAW
         mv TEST.P86 P86CREATE.P86
 
-        CertUtil -hashfile ../examples/P86/RC1.P86 MD5
-        CertUtil -hashfile LOADTEST_MEM.P86 MD5
-        CertUtil -hashfile LOADTEST_MEM.P86 MD5
-        CertUtil -hashfile P86CREATE.P86 MD5
+        print_hash ../examples/P86/RC1.P86
+        print_hash LOADTEST_MEM.P86
+        print_hash LOADTEST_FIL.P86
+        print_hash P86CREATE.P86
