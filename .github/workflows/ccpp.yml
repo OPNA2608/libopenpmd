@@ -85,7 +85,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        nix-env -iA nixpkgs.{cmake,open-watcom-v2,dosbox}
+        nix-env -f '<nixpkgs>' -i cmake open-watcom-v2 dosbox
 
     - name: Configure
       run: |
