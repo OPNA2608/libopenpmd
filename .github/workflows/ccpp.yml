@@ -14,13 +14,16 @@ defaults:
 
 jobs:
   normal:
-    matrix:
-      os: [ windows-latest, macos-latest, ubuntu-latest ]
     strategy:
+      matrix:
+        config:
+        - { name: 'Windows', os: windows-latest }
+        - { name: 'macOS', os: macos-latest }
+        - { name: 'Ubuntu', os: ubuntu-latest }
       fail-fast: false
 
-    name: ${{ runner.os }}
-    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
 
     steps:
     - name: Checkout
@@ -37,7 +40,7 @@ jobs:
         cd $PWD/build
 
         export TOOLPATH=${PWD}/tools
-        if [ '${{ os.runner }}' == 'Windows' ]; then
+        if [ '${{ matrix.config.name }}' == 'Windows' ]; then
           export TOOLPATH=${TOOLPATH}/Debug
           function print_hash() {
             CertUtil -hashfile "$1"
