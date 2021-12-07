@@ -45,6 +45,10 @@ jobs:
           function print_hash() {
             CertUtil -hashfile "$1"
           }
+        elif [ '${{ matrix.config.name }}' == 'macOS' ]; then
+          function print_hash() {
+            shasum -a 256 "$1"
+          }
         else
           function print_hash() {
             sha256sum "$1"
