@@ -16,7 +16,8 @@ jobs:
   normal:
     matrix:
       os: [ windows-latest, macos-latest, ubuntu-latest ]
-    fail-fast: false
+    strategy:
+      fail-fast: false
 
     name: ${{ runner.os }}
     runs-on: ${{ matrix.os }}
