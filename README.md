@@ -49,10 +49,20 @@ a better feel for the language & platform limitations.
 
 ## Credits
 
-- [@kajaponn](https://twitter.com/kajaponn), for writing the original PMD driver and all of the original tools.
-- [@ValleyBell](https://github.com/ValleyBell), for their [documentation of the PMD format](https://raw.githubusercontent.com/ValleyBell/MidiConverters/master/pmd_SeqFormat.txt).
-- [@AnhanLi](https://twitter.com/AnhanLi), for inspiring me with their [format analysis earlier this year](https://lithcore.cn/2318) to persue this project.
-- [@NoyemiK](https://github.com/NoyemiK), for her .M(2) file that I may include as an example.
-- [@Blargzargo](https://www.youtube.com/channel/UCDZR3q3anQ9boE6IAvorz8Q), for his independent [documentation of PMD and MML](https://pastebin.com/raw/FP5q8zgC).
-- [@Ravancloak](https://ravancloak.bandcamp.com/), for her example P86 bank.
+- [@kajaponn], for writing the original PMD driver and all of the original tools.
+- [@ValleyBell], for their [documentation of the PMD format].
+- [@AnhanLi], for inspiring me with their [format analysis earlier this year] to pursue this project.
+- [@NoyemiK], for her .M(2) file that I may include as an example.
+- [@Blargzargo], for his independent [documentation of PMD and MML].
+- [@Ravancloak], for her example P86 bank.
 
+[@kajaponn]: https://twitter.com/kajaponn
+[@ValleyBell]: https://github.com/ValleyBell
+[@AnhanLi]: https://twitter.com/AnhanLi
+[@NoyemiK]: https://github.com/NoyemiK
+[@Blargzargo]: https://www.youtube.com/channel/UCDZR3q3anQ9boE6IAvorz8Q
+[@Ravancloak]: https://ravancloak.bandcamp.com/
+
+[documentation of the PMD format]: https://raw.githubusercontent.com/ValleyBell/MidiConverters/master/pmd_SeqFormat.txt
+[format analysis earlier this year]: https://lithcore.cn/2318
+[documentation of PMD and MML]: https://pastebin.com/raw/FP5q8zgC
