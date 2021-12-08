@@ -411,11 +411,11 @@ int P86_SetSample (p86_struct* p86, unsigned char id, unsigned long length, sign
 	newSample->length = length;
 
 	newSample->type = MEM;
-  memcpy (buffer, data, length);
-  newSample->typeData.mem.data = buffer;
+	memcpy (buffer, data, length);
+	newSample->typeData.mem.data = buffer;
 
 	P86_FreeSample (p86->samples[id]);
-  p86->samples[id] = newSample;
+	p86->samples[id] = newSample;
 
 	P86_Print (p86);
 

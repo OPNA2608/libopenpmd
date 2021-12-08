@@ -47,10 +47,10 @@ int main (int argc, char* argv[]) {
 
 			sprintf (fileName, "%s%03d.RAW", OUTPUT_PREFIX, i);
 			fileHandle = fopen (fileName, "wb");
-		  if (fileHandle == NULL) {
-			  printf ("Could not open file %s.\n", fileName);
+			if (fileHandle == NULL) {
+				printf ("Could not open file %s.\n", fileName);
 				P86_Free (p86Bank);
-			  return 1;
+				return 1;
 			}
 
 			fwrite (p86Sample->typeData.mem.data, p86Sample->length, sizeof (char), fileHandle);
@@ -58,7 +58,7 @@ int main (int argc, char* argv[]) {
 				printf ("Error occurred while writing to file.\n");
 				fclose (fileHandle);
 				P86_Free (p86Bank);
-			  return 1;
+				return 1;
 			}
 
 			fclose (fileHandle);
