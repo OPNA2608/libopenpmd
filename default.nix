@@ -24,8 +24,9 @@ stdenv.mkDerivation rec {
 
   cmakeBuildType = "Debug";
 
-  # stub until install step is implemented
-  installPhase = ''
+  doCheck = true;
+
+  checkPhase = ''
     print() {
       toilet -f wideterm -F border $*
     }
@@ -58,10 +59,8 @@ stdenv.mkDerivation rec {
     print P86CREATE
     run_test ./tools/p86create TEST.***.RAW
 
-    print COMPARING HASHES
-    compare_two_hashes TEST_MEM.P86 TEST.P86
-
-    touch $out
+    # print COMPARING HASHES
+    # compare_two_hashes TEST_MEM.P86 TEST.P86
   '';
 }
 

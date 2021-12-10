@@ -27,10 +27,8 @@ if (CMAKE_BUILD_TYPE_UPPER STREQUAL "DEBUG")
     endif ()
 endif ()
 
-include_directories( include )
+include (GNUInstallDirs)
 
-# Library
-add_subdirectory(src)
-
-# CLI
-add_subdirectory(tools)
+add_subdirectory (include)
+add_subdirectory (src)
+add_subdirectory (tools)
