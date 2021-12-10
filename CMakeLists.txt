@@ -4,11 +4,11 @@ project (libopenpmd C)
 set (CMAKE_C_STANDARD 90)
 set (CMAKE_C_STANDARD_REQUIRED TRUE)
 
-if (${CMAKE_C_COMPILER_ID} MATCHES "MSVC")
+if (MSVC)
     # warning level 4 and all warnings as errors
     # add_compile_options (/W4 /WX)
     # Shut up MSVC about its "better", non-portable functions
-    add_definitions (-D_CRT_SECURE_NO_WARNINGS)
+    add_definitions (/D_CRT_SECURE_NO_WARNINGS)
 elseif (${CMAKE_C_COMPILER_ID} MATCHES "GNU|\\.*Clang|\\.*LLVM")
     # lots of warnings and all warnings as errors
     add_compile_options (-Wall -Wextra -pedantic -Werror -pedantic-errors)
