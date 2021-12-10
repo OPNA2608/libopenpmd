@@ -15,7 +15,8 @@ const unsigned long P86_LENGTHMAX = 0xFFFFFF;
 	locReadCounter = fread (var, elemsize, writecounter, p86File); \
 	if (locReadCounter != writecounter)
 p86_struct* P86_ImportFile (FILE* p86File) {
-	unsigned int i, j, locReadCounter;
+	size_t locReadCounter;
+	unsigned int i, j;
 	long curpos;
 	p86_struct* parsedData;
 	p86_sample* parsedSample;
@@ -134,7 +135,8 @@ p86_struct* P86_ImportFile (FILE* p86File) {
 }
 
 p86_struct* P86_ImportFileSlim (FILE* p86File) {
-	unsigned int i, j, locReadCounter;
+	size_t locReadCounter;
+	unsigned int i, j;
 	char* buffer;
 	p86_struct* parsedData;
 	p86_sample* parsedSample;
@@ -242,7 +244,8 @@ p86_struct* P86_ImportFileSlim (FILE* p86File) {
 	}
 int P86_ExportFile (const p86_struct* p86, FILE* p86File) {
 	unsigned long start, length, startWrite, lengthWrite, filReadCounter, readAmount;
-	unsigned int i, locReadCounter;
+	size_t locReadCounter;
+	unsigned int i;
 	signed char* buffer = NULL; /* Conditionally initialised */
 
 	P86_Validate (p86);

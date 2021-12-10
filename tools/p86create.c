@@ -5,7 +5,8 @@
 
 int main (int argc, char* argv[]) {
 	char errormsg[PMD_ERRMAXSIZE];
-	int i, dontcare;
+	size_t dontcare;
+	int i;
 	FILE* fileHandle;
 	p86_struct* newBank;
 	long sampleSize;
@@ -52,7 +53,7 @@ int main (int argc, char* argv[]) {
 		fclose (fileHandle);
 	}
 
-	printf ("Blub: %d\n", dontcare);
+	printf ("Blub: %lu\n", dontcare);
 
 	printf ("Exporting to %s.\n", OUTPUT_DEFAULT);
 	fileHandle = fopen (OUTPUT_DEFAULT, "wb");
