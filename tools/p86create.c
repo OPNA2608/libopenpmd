@@ -5,11 +5,11 @@
 
 int main (int argc, char* argv[]) {
 	char errormsg[PMD_ERRMAXSIZE];
-	size_t dontcare;
+	size_t readAmount;
 	int i;
 	FILE* fileHandle;
 	p86_struct* newBank;
-	long sampleSize;
+	unsigned long sampleSize;
 	signed char* sampleBuffer;
 
 	if (argc < 2) {
@@ -24,7 +24,7 @@ int main (int argc, char* argv[]) {
 
 	newBank = P86_New ();
 	if (newBank == NULL) {
-		/* TODO show PMD_GetError () */
+		printf ("ERROR: %s.\n", PMD_GetError());
 		return 1;
 	}
 
@@ -32,7 +32,7 @@ int main (int argc, char* argv[]) {
 		printf ("%s...\n", argv[i]);
 		fileHandle = fopen (argv[i], "rb");
 		if (fileHandle == NULL) {
-			printf ("Could not open file %s.\n", argv[i]);
+			printf ("ERROR: Could not open file %s.\n", argv[i]);
 			P86_Free (newBank);
 			return 1;
 		}
@@ -46,14 +46,20 @@ int main (int argc, char* argv[]) {
 			P86_Free (newBank);
 		}
 
-		dontcare = fread (sampleBuffer, sampleSize, sizeof (char), fileHandle);
+		readAmount = fread (sampleBuffer, sizeof (char), sampleSize, fileHandle);
+		if (readAmount < sampleSize) {
+			printf ("ERROR: Failed to read %lu bytes from %s.\n", sampleSize, argv[i]);
+			free (sampleBuffer);
+			fclose (fileHandle);
+			P86_Free (newBank);
+			return 1;
+		}
 
 		P86_AddSample (newBank, sampleSize, sampleBuffer);
+
 		free (sampleBuffer);
 		fclose (fileHandle);
 	}
-
-	printf ("Blub: %lu\n", dontcare);
 
 	printf ("Exporting to %s.\n", OUTPUT_DEFAULT);
 	fileHandle = fopen (OUTPUT_DEFAULT, "wb");

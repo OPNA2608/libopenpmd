@@ -243,8 +243,8 @@ p86_struct* P86_ImportFileSlim (FILE* p86File) {
 		return 1; \
 	}
 int P86_ExportFile (const p86_struct* p86, FILE* p86File) {
-	unsigned long start, length, startWrite, lengthWrite, filReadCounter, readAmount;
-	size_t locReadCounter;
+	unsigned long start, length, startWrite, lengthWrite, readAmount;
+	size_t filReadCounter, locReadCounter;
 	unsigned int i;
 	signed char* buffer = NULL; /* Conditionally initialised */
 
