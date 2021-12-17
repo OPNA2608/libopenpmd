@@ -47,6 +47,10 @@ help of prior documentation efforts.
 I'm redoing the codebase. I'll start with smaller, more urgent goals like the various sample / patch bank formats to get
 a better feel for the language & platform limitations.
 
+Currently writing code to parse, load, create & modify P86 banks. Figuring out what the API should look like as I go,
+depending on what I need to implement everything to a satisfactory degree. From there it's just a matter of copy-pasting
+function declarations & reimplementing them according to the formats, at least for the simple banks.
+
 ## Credits
 
 - [@kajaponn], for writing the original PMD driver and all of the original tools.
