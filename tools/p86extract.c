@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include "p86.h"
 
-#define OUTPUT_PREFIX "TEST."
+#define OUTPUT_PREFIX "TEST_"
 
 int main (int argc, char* argv[]) {
 	int i;
@@ -23,6 +23,7 @@ int main (int argc, char* argv[]) {
 	fileHandle = fopen (fileName, "rb");
 	if (fileHandle == NULL) {
 		printf ("Could not open file %s.\n", fileName);
+		perror (NULL);
 		return 1;
 	}
 
@@ -49,6 +50,7 @@ int main (int argc, char* argv[]) {
 			fileHandle = fopen (fileName, "wb");
 			if (fileHandle == NULL) {
 				printf ("Could not open file %s.\n", fileName);
+				perror (NULL);
 				P86_Free (p86Bank);
 				return 1;
 			}
