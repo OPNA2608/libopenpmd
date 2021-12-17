@@ -64,7 +64,7 @@ jobs:
         mv TEST_FIL.P86 LOADTEST_FIL.P86
 
         p86extract LOADTEST_MEM.P86
-        p86create TEST.*.RAW
+        p86create TEST_*.RAW
         mv TEST.P86 P86CREATE.P86
 
         print_hash ../examples/P86/RC1.P86
