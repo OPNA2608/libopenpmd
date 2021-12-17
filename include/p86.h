@@ -40,20 +40,26 @@ extern const unsigned short P86_HEADERLENGTH;
 extern const unsigned long P86_LENGTHMAX;
 
 /*
- * Reads a P86 file from FILE pointer p86File and parses its contents into a P86 struct.
+ * Reads a P86 file from FILE pointer p86File.
  *
- * This function will load all samples into memory. On a system with minimal amounts of memory, P86_ImportFileSlim may
- * be preferred.
+ * Used implementation (Memory or File) depends on the configure-time option USE_LOWMEM.
  */
 p86_struct* P86_ImportFile (FILE* p86File);
 
 /*
- * Reads a P86 file from FILE pointer p86File and parses its contents into a p86File-referencing P86 struct.
+ * Loads a P86 file from FILE pointer p86File by fully loading its contents into memory.
  *
- * This function will only parse the sample locations & store them as as FILE* + offset pairs.
- * You are responsible for keeping the handed-in FILE* opened!
+ * On a system with minimal amounts of memory, P86_ImportFile_File may be preferred.
  */
-p86_struct* P86_ImportFileSlim (FILE* p86File);
+p86_struct* P86_ImportFile_Memory (FILE* p86File);
+
+/*
+ * Loads a P86 file from FILE pointer p86File by keeping parsing crucial bank data & keeping FILE references.
+ * You are responsible for keeping the handed-in FILE* opened!
+ *
+ * On a system with modern amounts of memory, P86_ImportFile_Memory may be preferred.
+ */
+p86_struct* P86_ImportFile_File (FILE* p86File);
 
 /*
  * TODO Implement

@@ -7,14 +7,20 @@ const char P86_MAGIC[12] = "PCM86 DATA\n\0";
 const unsigned short P86_HEADERLENGTH = 0x0610;
 const unsigned long P86_LENGTHMAX = 0xFFFFFF;
 
-/*
- * TODO
- * * load file in chunks instead?
- */
+p86_struct* P86_ImportFile (FILE* p86File) {
+	return
+#ifdef USE_LOWMEM
+		P86_ImportFile_File
+#else
+		P86_ImportFile_Memory
+#endif
+			(p86File);
+}
+
 #define READ_CHECK(var, elemsize, writecounter) \
 	locReadCounter = fread (var, elemsize, writecounter, p86File); \
 	if (locReadCounter != writecounter)
-p86_struct* P86_ImportFile (FILE* p86File) {
+p86_struct* P86_ImportFile_Memory (FILE* p86File) {
 	size_t locReadCounter;
 	unsigned int i, j;
 	long curpos;
@@ -134,7 +140,7 @@ p86_struct* P86_ImportFile (FILE* p86File) {
 	return parsedData;
 }
 
-p86_struct* P86_ImportFileSlim (FILE* p86File) {
+p86_struct* P86_ImportFile_File (FILE* p86File) {
 	size_t locReadCounter;
 	unsigned int i, j;
 	char* buffer;

@@ -24,6 +24,10 @@ stdenv.mkDerivation rec {
 
   cmakeBuildType = "Debug";
 
+  cmakeFlags = [
+    # "-DUSE_LOWMEM=ON"
+  ];
+
   doCheck = true;
 
   checkPhase = ''
@@ -57,7 +61,7 @@ stdenv.mkDerivation rec {
     run_test ./tools/p86extract TEST_MEM.P86
 
     print P86CREATE
-    run_test ./tools/p86create TEST.***.RAW
+    run_test ./tools/p86create TEST_***.RAW
 
     # print COMPARING HASHES
     # compare_two_hashes TEST_MEM.P86 TEST.P86

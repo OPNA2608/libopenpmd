@@ -49,10 +49,10 @@ int main (int argc, char* argv[]) {
 		return 1;
 	}
 
-	/* P86_ImportFile */
+	/* P86_ImportFile_Memory */
 
 	printf ("Testing memory-heavy importing of %s...\n", p86FileInput);
-	parsedData = P86_ImportFile (inpFile);
+	parsedData = P86_ImportFile_Memory (inpFile);
 	if (parsedData != NULL) {
 		if (export (parsedData, p86FileOutputMem) == 0) {
 			printf ("Success!\n");
@@ -68,10 +68,10 @@ int main (int argc, char* argv[]) {
 
 	fseek (inpFile, 0, SEEK_SET);
 
-	/* P86_ImportFileSlim */
+	/* P86_ImportFile_File */
 
 	printf ("Testing memory-light importing of %s...\n", p86FileInput);
-	parsedData = P86_ImportFileSlim (inpFile);
+	parsedData = P86_ImportFile_File (inpFile);
 	if (parsedData != NULL) {
 		if (export (parsedData, p86FileOutputFil) == 0) {
 			printf ("Success!\n");
