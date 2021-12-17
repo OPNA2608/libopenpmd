@@ -4,7 +4,6 @@
 #define OUTPUT_DEFAULT "TEST.P86"
 
 int main (int argc, char* argv[]) {
-	char errormsg[PMD_ERRMAXSIZE];
 	size_t readAmount;
 	int i;
 	FILE* fileHandle;
@@ -41,8 +40,7 @@ int main (int argc, char* argv[]) {
 		fseek (fileHandle, 0, SEEK_SET);
 
 		MALLOC_CHECK (sampleBuffer, sampleSize) {
-			snprintf (errormsg, PMD_ERRMAXSIZE, pmd_error_malloc, argv[1], sampleSize);
-			PMD_SetError (errormsg);
+			PMD_SetError (pmd_error_malloc, argv[1], sampleSize);
 			P86_Free (newBank);
 		}
 

@@ -3,6 +3,7 @@ project (libopenpmd C)
 
 set (CMAKE_C_STANDARD 90)
 set (CMAKE_C_STANDARD_REQUIRED TRUE)
+set (CMAKE_C_EXTENSIONS OFF)
 
 if (MSVC)
     # warning level 4 and all warnings as errors

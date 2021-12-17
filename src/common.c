@@ -13,7 +13,7 @@ const char* pmd_error_write = "Failed to write to file";
 void PMD_SetError (const char* errorMsg, ...) {
 	va_list fArgs;
 	va_start (fArgs, errorMsg);
-	snprintf (pmd_error, PMD_ERRMAXSIZE - 1, errorMsg, fArgs);
+	vsprintf (pmd_error, errorMsg, fArgs);
 	va_end (fArgs);
 }
 
