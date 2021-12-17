@@ -22,7 +22,7 @@ int main (int argc, char* argv[]) {
 	fileName = argv[1];
 	fileHandle = fopen (fileName, "rb");
 	if (fileHandle == NULL) {
-		printf ("Could not open file %s.\n", fileName);
+		printf ("ERROR: Could not open file %s.\n", fileName);
 		perror (NULL);
 		return 1;
 	}
@@ -31,7 +31,7 @@ int main (int argc, char* argv[]) {
 	fclose (fileHandle);
 
 	if (p86Bank == NULL) {
-		printf ("%s\n", PMD_GetError());
+		printf ("ERROR: %s\n", PMD_GetError());
 		return 1;
 	}
 
@@ -41,7 +41,7 @@ int main (int argc, char* argv[]) {
 
 			p86Sample = P86_GetSample (p86Bank, i);
 			if (p86Sample == NULL) {
-				printf ("Failed to acquire copy of sample data %03d.\n", i);
+				printf ("ERROR: Failed to acquire copy of sample data %03d.\n", i);
 				P86_Free (p86Bank);
 				return 1;
 			}
@@ -49,7 +49,7 @@ int main (int argc, char* argv[]) {
 			sprintf (fileName, "%s%03d.RAW", OUTPUT_PREFIX, i);
 			fileHandle = fopen (fileName, "wb");
 			if (fileHandle == NULL) {
-				printf ("Could not open file %s.\n", fileName);
+				printf ("ERROR: Could not open file %s.\n", fileName);
 				perror (NULL);
 				P86_Free (p86Bank);
 				return 1;
@@ -57,7 +57,7 @@ int main (int argc, char* argv[]) {
 
 			fwrite (p86Sample->typeData.mem.data, p86Sample->length, sizeof (char), fileHandle);
 			if (ferror (fileHandle)) {
-				printf ("Error occurred while writing to file.\n");
+				printf ("ERROR: Error occurred while writing to file.\n");
 				fclose (fileHandle);
 				P86_Free (p86Bank);
 				return 1;

@@ -32,6 +32,7 @@ int main (int argc, char* argv[]) {
 		fileHandle = fopen (argv[i], "rb");
 		if (fileHandle == NULL) {
 			printf ("ERROR: Could not open file %s.\n", argv[i]);
+			perror (NULL);
 			P86_Free (newBank);
 			return 1;
 		}
