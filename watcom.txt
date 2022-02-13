@@ -1,8 +1,19 @@
-32-bit DOS w/ DOS4/GW:
 mkdir build
 cd build
 unset CC
 unset CXX
-cmake -G "Watcom WMake" -DCMAKE_SYSTEM_NAME=DOS -DCMAKE_SYSTEM_PROCESSOR=X86 ..
+
+# 16-bit DOS:             export PROCESSOR=I86
+# 32-bit DOS w/ DOS4/GW:  export PROCESSOR=X86
+export PROCESSOR=I86
+
+cmake -G "Watcom WMake" -DCMAKE_SYSTEM_NAME=DOS -DCMAKE_SYSTEM_PROCESSOR=${PROCESSOR} ..
 wmake
-(and copy ${WATCOM}/binw/dos4gw.exe to CWD to run in dosbox)
+
+## For running 32-bit on PC-98:
+
+# Copy ${WATCOM}/binw/dos4gw.exe along with the binaries
+set DOS16M=1 @2M-4M
+
+# Prepend every binary you want to run with "DOS4GW.exe ", i.e. for loadtest:
+DOS4GW.EXE LOADTEST.EXE TEST.P86
