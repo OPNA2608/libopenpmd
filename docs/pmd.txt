@@ -60,6 +60,22 @@ NEC PC-98 {
 0x0017         Offset Dummy Rhythm Pattern Data (offset to next short) (1h)
 0x0019         Offset Instrument Data (1h)
 
+} IBM PC/AT {
+
+0x0001         Offset FM1 Sequence Data (1h)
+0x0003         Offset FM2 Sequence Data (1h)
+0x0005         Offset FM3 Sequence Data (1h)
+0x0007         Offset FM4 Sequence Data (1h)
+0x0009         Offset FM5 Sequence Data (1h)
+0x000B         Offset FM6 Sequence Data (1h)
+0x000D         Offset FM7 Sequence Data (1h)
+0x000F         Offset FM8 Sequence Data (1h)
+0x0011         Offset FM9 Sequence Data (1h)
+0x0013         Offset Dummy Sequence Data (1h)
+0x0015         Offset Dummy Sequence Data (1h)
+0x0017         Offset Dummy Pattern Data (for extra data section) (1h)
+0x0019         Offset Instrument Data (1h)
+
 }
 
 
@@ -367,6 +383,12 @@ FE
                                 - 4x DT2/D2R
                                 - 4x D1L/RR
                                 - RL/FB/CONECT
+                              OPL: see YM3812 manual, 2-7 Address Map
+                                - 2x AM/VIB/EG-TYP/KSR/MULTI
+                                - 2x KSL/TL
+                                - 2x AR/DR
+                                - 2x SL/RR
+                                - FB/C
 
 version-dependent / not guaranteed to exist (missing if FE subsection in previous section is missing) {
 
