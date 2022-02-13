@@ -6,7 +6,7 @@
 
 0x0000         Version (1b) {
 
-  0x00 = NEC PC-98
+  0x00 = NEC PC-98 / Fujitsu FM Towns
   0x01 = Sharp X68000
   0x02 = IBM PC/AT
 
@@ -21,11 +21,27 @@ NEC PC-98 {
 0x0009         Offset FM5 Sequence Data (1h)
 0x000B         Offset FM6 Sequence Data (1h)
 0x000D         Offset SSG1 Sequence Data (1h)
-0x000F         Offset SSG1 Sequence Data (1h)
-0x0011         Offset SSG1 Sequence Data (1h)
+0x000F         Offset SSG2 Sequence Data (1h)
+0x0011         Offset SSG3 Sequence Data (1h)
 0x0013         Offset ADPCM Sequence Data (1h)
 0x0015         Offset Rhythm Sequence Data (1h)
 0x0017         Offset Rhythm Pattern Data (1h)
+0x0019         Offset Instrument Data (1h)
+
+} Fujitsu FM Towns {
+
+0x0001         Offset FM1 Sequence Data (1h)
+0x0003         Offset FM2 Sequence Data (1h)
+0x0005         Offset FM3 Sequence Data (1h)
+0x0007         Offset FM4 Sequence Data (1h)
+0x0009         Offset FM5 Sequence Data (1h)
+0x000B         Offset FM6 Sequence Data (1h)
+0x000D         Offset Dummy Sequence Data (1h)
+0x000F         Offset Dummy Sequence Data (1h)
+0x0011         Offset Dummy Sequence Data (1h)
+0x0013         Offset PCM1 Sequence Data (1h)
+0x0015         Offset PCM2 Sequence Data (1h)
+0x0017         Offset Dummy Pattern Data (for extra data section) (1h)
 0x0019         Offset Instrument Data (1h)
 
 } Sharp X68000 {
@@ -38,10 +54,10 @@ NEC PC-98 {
 0x000B         Offset FM6 Sequence Data (1h)
 0x000D         Offset FM7 Sequence Data (1h)
 0x000F         Offset FM8 Sequence Data (1h)
-0x0011         Dummy Sequence Data (1h)
+0x0011         Offset Dummy Sequence Data (1h)
 0x0013         Offset PCM Sequence Data (1h)
-0x0015         Dummy Sequence Data (1h)
-0x0017         Dummy Rhythm Pattern Data (Offset to next short) (1h)
+0x0015         Offset Dummy Sequence Data (1h)
+0x0017         Offset Dummy Rhythm Pattern Data (offset to next short) (1h)
 0x0019         Offset Instrument Data (1h)
 
 }
@@ -310,23 +326,30 @@ FF                          - Pattern over, return
 }
 
 
-version-dependent / not guaranteed to exist {
+Version-dependent / not guaranteed to exist {
 
-4b                          - song length (including pre-Master Loop)
-4b                          - loop length (only Master Loop Start - End)
-1h                          - offset to extra data table
-1b                          - extra data type
+(This is very likely read backwards from the Instrument Data Section)
+
+Extra data type 0x48 OR NEC PC-98, missing clarity {
+
+4b                          - Song length (including pre-Master Loop)
+4b                          - Loop length (only Master Loop Start - End)
+
+}
+
+1h                          - Offset to Extra Data Table
+1b                          - Extra Data Table version
 FE
 
 }
 
 
 =======================================
-    Instrument Definition Section
+       Instrument Data Section
 =======================================
 
 1b                          - @ XX
-25b                         - raw register data, see chip-specific manual for details
+25b                         - Eaw register data, see chip-specific manual for details
                               OPN-family: see YM2608 manual, 2-2-2: Parameters and channel registers: $30-$B6
                                 (OP order: 1->3->2->4!)
                                 - 4x DT/MULTI
@@ -357,24 +380,26 @@ section end:
        Extra Data Table Section
 =======================================
 
-(all strings are NUL-terminated)
+(strings are C-style, NUL-terminated)
 
 V4.8+ {
 
-1h                          - offset PPZ filename string
+1h                          - Offset PPZ filename string
 
 }
 
 V4.3+ {
 
-1h                          - offset PPS filename strings (2 filenames: seperator 0xFE)
+1h                          - Offset PPS filename strings (2 filenames: seperator 0xFE)
 
 }
 
-1h                          - offset PPC/P86 filename string
-1h                          - offset title string
-1h                          - offset composer string
-1h                          - offset arranger string
+1h                          - Offset main sample bank filename string
+                              - NEC PC-98: PPC/P86
+                              - Fujitsu FM Towns: PMB
+1h                          - Offset title string
+1h                          - Offset composer string
+1h                          - Offset arranger string
 
 [0 .. 128] {
 
