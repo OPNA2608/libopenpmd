@@ -55,7 +55,7 @@ p86_struct* P86_ImportFile_Memory (FILE* p86File);
 
 /*
  * Loads a P86 file from FILE pointer p86File by keeping parsing crucial bank data & keeping FILE references.
- * You are responsible for keeping the handed-in FILE* opened!
+ * You are responsible for keeping the handed-in FILE* opened while its contents are needed!
  *
  * On a system with modern amounts of memory, P86_ImportFile_Memory may be preferred.
  */
