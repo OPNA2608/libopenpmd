@@ -32,20 +32,20 @@ if (CMAKE_BUILD_TYPE_UPPER STREQUAL "DEBUG")
 	endif ()
 endif ()
 
-if (CMAKE_SYSTEM_NAME STREQUAL "DOS" AND CMAKE_SYSTEM_PROCESSOR STREQUAL "I86")
-	set (PREFER_LOWMEM TRUE)
-else ()
-	set (PREFER_LOWMEM FALSE)
-endif ()
-option (USE_LOWMEM
-	"Use code that's better suited for low-memory environments"
-	${PREFER_LOWMEM}
-)
-message (STATUS "USE_LOWMEM: ${USE_LOWMEM}")
+#if (CMAKE_SYSTEM_NAME STREQUAL "DOS" AND CMAKE_SYSTEM_PROCESSOR STREQUAL "I86")
+#	set (PREFER_LOWMEM TRUE)
+#else ()
+#	set (PREFER_LOWMEM FALSE)
+#endif ()
+#option (USE_LOWMEM
+#	"Use code that's better suited for low-memory environments"
+#	${PREFER_LOWMEM}
+#)
+#message (STATUS "USE_LOWMEM: ${USE_LOWMEM}")
 
-if (USE_LOWMEM)
-  add_definitions (-DUSE_LOWMEM)
-endif ()
+#if (USE_LOWMEM)
+#  add_definitions (-DUSE_LOWMEM)
+#endif ()
 
 include (GNUInstallDirs)
 
