@@ -9,6 +9,9 @@ mkShell {
     editorconfig-checker
     valgrind
     gdb
+  ] ++ lib.optionals (stdenv.hostPlatform.isx86) [
+    open-watcom-v2
+    dosbox
   ];
 
   shellHook = ''

@@ -63,7 +63,7 @@ long PMD_GetBuffer (void** dest) {
 			break;
 		}
 	}
-	return buf_size != 0 ? buf_size : -1;
+	return buf_size != 0 ? buf_size : -1L;
 }
 
 /*

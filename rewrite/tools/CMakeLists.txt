@@ -11,3 +11,10 @@ target_include_directories (p86exp PUBLIC ${INCLUDE_PATH})
 install (TARGETS p86exp
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+add_executable (p86imp p86imp.c)
+target_link_libraries (p86imp PRIVATE openpmd)
+target_include_directories (p86imp PUBLIC ${INCLUDE_PATH})
+install (TARGETS p86imp
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)

@@ -11,12 +11,13 @@
 int main (void) {
 	unsigned short id;
 	char* inFilnam, * iobuf;
-	unsigned int filnamLen, iobufLen, sampleLen;
+	int filnamLen, iobufLen;
+	unsigned int sampleLen;
 	int sampleRead;
 	FILE* fileIn, * dest;
 	p86_struct* p86 = P86_New();
 
-	filnamLen = PMD_GetBuffer ((void**) &outFilnam);
+	filnamLen = PMD_GetBuffer ((void**) &inFilnam);
 	if (filnamLen <= 0) {
 		P86_Free (p86);
 		return 1;
@@ -24,7 +25,7 @@ int main (void) {
 
 	iobufLen = PMD_GetBuffer ((void**) &iobuf);
 	if (iobufLen <= 0) {
-		free (outFilnam);
+		free (inFilnam);
 		P86_Free (p86);
 		return 1;
 	}
@@ -34,7 +35,7 @@ int main (void) {
 	if (P86_Read (p86, fileIn)) {
 		fclose (fileIn);
 		free (iobuf);
-		free (outFilnam);
+		free (inFilnam);
 		P86_Free (p86);
 		return 2;
 	}
@@ -43,15 +44,15 @@ int main (void) {
 	for (id = 0; id <= 255; ++id) {
 		/*if (p86->samples[id] == NULL) continue;*/
 
-		sprintf (inFilnam, "TEST.%03u.RAW", id);
+		sprintf (inFilnam, "TEST-%03u.RAW", id);
 		fileIn = fopen (inFilnam, "rb");
 		if (fileIn == NULL) continue;
 
-		dest = fopen (outFilnam, "wb");
+		dest = fopen (inFilnam, "wb");
 		if (dest == NULL) {
 			fclose (fileIn);
 			free (iobuf);
-			free (outFilnam);
+			free (inFilnam);
 			P86_Free (p86);
 			return 1;
 		}
@@ -63,7 +64,7 @@ int main (void) {
 				fclose (dest);
 				fclose (fileIn);
 				free (iobuf);
-				free (outFilnam);
+				free (inFilnam);
 				P86_Free (p86);
 				ERROR_READ ("P86 partial sample (into buffer)",
 					(sampleLen > (unsigned long)iobufLen) ? (unsigned long)iobufLen : sampleLen
@@ -76,7 +77,7 @@ int main (void) {
 				fclose (dest);
 				fclose (fileIn);
 				free (iobuf);
-				free (outFilnam);
+				free (inFilnam);
 				P86_Free (p86);
 				ERROR_WRITE ("P86 partial sample (from buffer)", sampleRead);
 			}
@@ -88,7 +89,7 @@ int main (void) {
 
 	fclose (fileIn);
 	free (iobuf);
-	free (outFilnam);
+	free (inFilnam);
 	P86_Free (p86);
 
 	return 0;
