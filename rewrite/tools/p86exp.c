@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define RETVAL_OK   0
+#define RETVAL_MAIN 1
+#define RETVAL_LIB  2
 /*
 	0 - OK
 	1 - main error
@@ -17,37 +20,33 @@ int main (void) {
 	FILE* fileIn, * dest;
 	p86_struct* p86 = P86_New();
 
+	int retval = RETVAL_OK;
+
 	filnamLen = PMD_GetBuffer ((void**) &outFilnam);
 	if (filnamLen <= 0) {
 		printf ("Get filename buffer error\n");
-		P86_Free (p86);
-		return 1;
+		retval = RETVAL_MAIN;
+		goto cleanup_p86;
 	}
 
 	iobufLen = PMD_GetBuffer ((void**) &iobuf);
 	if (iobufLen <= 0) {
 		printf ("Get I/O buffer error\n");
-		free (outFilnam);
-		P86_Free (p86);
-		return 1;
+		retval = RETVAL_MAIN;
+		goto cleanup_outFilnam;
 	}
 
 	fileIn = fopen ("TEST.P86", "rb");
 	if (fileIn == NULL) {
 		printf ("Open TEST.P86 error\n");
-		free (iobuf);
-		free (outFilnam);
-		P86_Free (p86);
-		return 1;
+		retval = RETVAL_MAIN;
+		goto cleanup_iobuf;
 	}
 
 	if (P86_Read (p86, fileIn)) {
 		printf ("Parse TEST.P86 error\n");
-		fclose (fileIn);
-		free (iobuf);
-		free (outFilnam);
-		P86_Free (p86);
-		return 2;
+		retval = RETVAL_LIB;
+		goto cleanup_fileIn;
 	}
 
 	for (id = 0; id <= 255; ++id) {
@@ -58,11 +57,8 @@ int main (void) {
 		if (dest == NULL) {
 			perror("fopen() failed");
 			printf ("Open %s error\n", outFilnam);
-			fclose (fileIn);
-			free (iobuf);
-			free (outFilnam);
-			P86_Free (p86);
-			return 1;
+			retval = RETVAL_MAIN;
+			goto cleanup_fileIn;
 		}
 
 		sampleLen = p86->samples[id]->length;
@@ -70,26 +66,20 @@ int main (void) {
 			sampleRead = PMD_ReadBuffer (p86->samples[id]->src, sampleLen, iobuf, iobufLen);
 			if (sampleRead == -1) {
 				printf ("Read %s sample error\n", outFilnam);
-				fclose (dest);
-				fclose (fileIn);
-				free (iobuf);
-				free (outFilnam);
-				P86_Free (p86);
 				ERROR_READ ("P86 partial sample (into buffer)",
 					(sampleLen > (unsigned long)iobufLen) ? (unsigned long)iobufLen : sampleLen
 				);
-
-				return 2;
+				fclose (dest);
+				retval = RETVAL_LIB;
+				goto cleanup_fileIn;
 			};
 
 			WRITE_CHECK (iobuf, sizeof (char), sampleRead) {
 				printf ("Write %s sample error\n", outFilnam);
-				fclose (dest);
-				fclose (fileIn);
-				free (iobuf);
-				free (outFilnam);
-				P86_Free (p86);
 				ERROR_WRITE ("P86 partial sample (from buffer)", sampleRead);
+				fclose (dest);
+				retval = RETVAL_LIB;
+				goto cleanup_fileIn;
 			}
 			sampleLen -= sampleRead;
 		} while (sampleLen != 0);
@@ -97,11 +87,14 @@ int main (void) {
 		fclose (dest);
 	}
 
+cleanup_fileIn:
 	fclose (fileIn);
+cleanup_iobuf:
 	free (iobuf);
+cleanup_outFilnam:
 	free (outFilnam);
+cleanup_p86:
 	P86_Free (p86);
-	printf ("Done?\n");
 
-	return 0;
+	return retval;
 }
