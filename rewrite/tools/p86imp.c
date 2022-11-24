@@ -10,22 +10,14 @@
 */
 int main (void) {
 	unsigned short id;
-	char* inFilnam, * iobuf;
-	int filnamLen, iobufLen;
+	char* inFilnam;
+	int filnamLen;
 	unsigned int sampleLen;
-	int sampleRead;
-	FILE* fileIn, * dest;
+	FILE* fileIn[256], * dest;
 	p86_struct* p86 = P86_New();
 
 	filnamLen = PMD_GetBuffer ((void**) &inFilnam);
 	if (filnamLen <= 0) {
-		P86_Free (p86);
-		return 1;
-	}
-
-	iobufLen = PMD_GetBuffer ((void**) &iobuf);
-	if (iobufLen <= 0) {
-		free (inFilnam);
 		P86_Free (p86);
 		return 1;
 	}
@@ -42,53 +34,65 @@ int main (void) {
 */
 
 	for (id = 0; id <= 255; ++id) {
-		/*if (p86->samples[id] == NULL) continue;*/
-
 		sprintf (inFilnam, "TEST-%03u.RAW", id);
-		fileIn = fopen (inFilnam, "rb");
-		if (fileIn == NULL) continue;
+		fileIn[id] = fopen (inFilnam, "rb");
+		if (fileIn[id] == NULL) continue;
 
-		dest = fopen (inFilnam, "wb");
-		if (dest == NULL) {
-			fclose (fileIn);
-			free (iobuf);
+		if (!pmd_io_funcs.io_s (fileIn[id], SEEK_END, 0)) {
+			do {
+				if (fileIn[id] != NULL) fclose (fileIn[id]);
+			} while (id-- > 0);
 			free (inFilnam);
 			P86_Free (p86);
-			return 1;
+			return 2;
+		}
+		if (!pmd_io_funcs.io_p (fileIn[id], &sampleLen)) {
+			do {
+				if (fileIn[id] != NULL) fclose (fileIn[id]);
+			} while (id-- > 0);
+			free (inFilnam);
+			P86_Free (p86);
+			return 2;
+		}
+		if (!pmd_io_funcs.io_s (fileIn[id], SEEK_SET, 0)) {
+			do {
+				if (fileIn[id] != NULL) fclose (fileIn[id]);
+			} while (id-- > 0);
+			free (inFilnam);
+			P86_Free (p86);
+			return 2;
 		}
 
-		sampleLen = p86->samples[id]->length;
-		do {
-			sampleRead = PMD_ReadBuffer (p86->samples[id]->src, sampleLen, iobuf, iobufLen);
-			if (sampleRead == -1) {
-				fclose (dest);
-				fclose (fileIn);
-				free (iobuf);
-				free (inFilnam);
-				P86_Free (p86);
-				ERROR_READ ("P86 partial sample (into buffer)",
-					(sampleLen > (unsigned long)iobufLen) ? (unsigned long)iobufLen : sampleLen
-				);
-
-				return 2;
-			};
-
-			WRITE_CHECK (iobuf, sizeof (char), sampleRead) {
-				fclose (dest);
-				fclose (fileIn);
-				free (iobuf);
-				free (inFilnam);
-				P86_Free (p86);
-				ERROR_WRITE ("P86 partial sample (from buffer)", sampleRead);
-			}
-			sampleLen -= sampleRead;
-		} while (sampleLen != 0);
-
-		fclose (dest);
+		P86_SetSample (p86, id, fileIn[id], 0, sampleLen);
 	}
 
-	fclose (fileIn);
-	free (iobuf);
+	dest = fopen ("TEST__.P86", "wb");
+	if (dest == NULL) {
+		--id;
+		do {
+			if (fileIn[id] != NULL) fclose (fileIn[id]);
+		} while (id-- > 0);
+		free (inFilnam);
+		P86_Free (p86);
+		return 2;
+	}
+
+	if (P86_Write (p86, dest)) {
+		fclose (dest);
+		--id;
+		do {
+			if (fileIn[id] != NULL) fclose (fileIn[id]);
+		} while (id-- > 0);
+		free (inFilnam);
+		P86_Free (p86);
+		return 2;
+	}
+
+	fclose (dest);
+	--id;
+	do {
+		if (fileIn[id] != NULL) fclose (fileIn[id]);
+	} while (id-- > 0);
 	free (inFilnam);
 	P86_Free (p86);
 
