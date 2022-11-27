@@ -3,14 +3,35 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define RETVAL_OK   0
-#define RETVAL_MAIN 1
-#define RETVAL_LIB  2
 /*
 	0 - OK
 	1 - main error
 	2 - library error
 */
+
+#define RETVAL_OK   0
+#define RETVAL_MAIN 1
+#define RETVAL_LIB  2
+
+#define CLEANUP_P86\
+	P86_Free (p86);
+
+#define CLEANUP_OUTFILNAM\
+	free (outFilnam);\
+	CLEANUP_P86;
+
+#define CLEANUP_IOBUF\
+	free (iobuf);\
+	CLEANUP_OUTFILNAM;
+
+#define CLEANUP_FILEIN\
+	fclose (fileIn);\
+	CLEANUP_IOBUF;
+
+#define CLEANUP_DEST\
+	fclose (dest);\
+	CLEANUP_FILEIN;
+
 int main (void) {
 	unsigned short id;
 	char* outFilnam, * iobuf;
@@ -20,33 +41,31 @@ int main (void) {
 	FILE* fileIn, * dest;
 	p86_struct* p86 = P86_New();
 
-	int retval = RETVAL_OK;
-
 	filnamLen = PMD_GetBuffer ((void**) &outFilnam);
 	if (filnamLen <= 0) {
 		printf ("Get filename buffer error\n");
-		retval = RETVAL_MAIN;
-		goto cleanup_p86;
+		CLEANUP_P86;
+		return RETVAL_MAIN;
 	}
 
 	iobufLen = PMD_GetBuffer ((void**) &iobuf);
 	if (iobufLen <= 0) {
 		printf ("Get I/O buffer error\n");
-		retval = RETVAL_MAIN;
-		goto cleanup_outFilnam;
+		CLEANUP_OUTFILNAM;
+		return RETVAL_MAIN;
 	}
 
 	fileIn = fopen ("TEST.P86", "rb");
 	if (fileIn == NULL) {
 		printf ("Open TEST.P86 error\n");
-		retval = RETVAL_MAIN;
-		goto cleanup_iobuf;
+		CLEANUP_IOBUF;
+		return RETVAL_MAIN;
 	}
 
 	if (P86_Read (p86, fileIn)) {
 		printf ("Parse TEST.P86 error\n");
-		retval = RETVAL_LIB;
-		goto cleanup_fileIn;
+		CLEANUP_FILEIN;
+		return RETVAL_LIB;
 	}
 
 	for (id = 0; id <= 255; ++id) {
@@ -55,10 +74,10 @@ int main (void) {
 		sprintf (outFilnam, "TEST-%03u.RAW", id);
 		dest = fopen (outFilnam, "wb");
 		if (dest == NULL) {
-			perror("fopen() failed");
+			perror("fopen() failed"); // works on dos w/ ow, mingw/msvc windows?
 			printf ("Open %s error\n", outFilnam);
-			retval = RETVAL_MAIN;
-			goto cleanup_fileIn;
+			CLEANUP_FILEIN;
+			return RETVAL_MAIN;
 		}
 
 		sampleLen = p86->samples[id]->length;
@@ -69,17 +88,15 @@ int main (void) {
 				ERROR_READ ("P86 partial sample (into buffer)",
 					(sampleLen > (unsigned long)iobufLen) ? (unsigned long)iobufLen : sampleLen
 				);
-				fclose (dest);
-				retval = RETVAL_LIB;
-				goto cleanup_fileIn;
+				CLEANUP_DEST;
+				return RETVAL_LIB;
 			};
 
 			WRITE_CHECK (iobuf, sizeof (char), sampleRead) {
 				printf ("Write %s sample error\n", outFilnam);
 				ERROR_WRITE ("P86 partial sample (from buffer)", sampleRead);
-				fclose (dest);
-				retval = RETVAL_LIB;
-				goto cleanup_fileIn;
+				CLEANUP_DEST;
+				return RETVAL_LIB;
 			}
 			sampleLen -= sampleRead;
 		} while (sampleLen != 0);
@@ -87,14 +104,6 @@ int main (void) {
 		fclose (dest);
 	}
 
-cleanup_fileIn:
-	fclose (fileIn);
-cleanup_iobuf:
-	free (iobuf);
-cleanup_outFilnam:
-	free (outFilnam);
-cleanup_p86:
-	P86_Free (p86);
-
-	return retval;
+	CLEANUP_FILEIN;
+	return RETVAL_OK;
 }
