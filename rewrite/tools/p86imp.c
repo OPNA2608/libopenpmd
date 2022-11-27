@@ -8,6 +8,32 @@
 	1 - main error
 	2 - library error
 */
+
+#define RETVAL_OK   0
+#define RETVAL_MAIN 1
+#define RETVAL_LIB  2
+
+#define CLEANUP_P86\
+	P86_Free (p86);
+
+#define CLEANUP_INFILNAM\
+	free (inFilnam);\
+	CLEANUP_P86;
+
+#define CLEANUP_FILEINS\
+	do {\
+		if (fileIn[id] != NULL) fclose (fileIn[id]);\
+	} while (id-- > 0);\
+	CLEANUP_INFILNAM;
+
+#define CLEANUP_FILEINS_POST\
+	--id;\
+	CLEANUP_FILEINS;
+
+#define CLEANUP_DEST\
+	fclose (dest);\
+	CLEANUP_FILEINS_POST;
+
 int main (void) {
 	unsigned short id;
 	char* inFilnam;
@@ -18,20 +44,10 @@ int main (void) {
 
 	filnamLen = PMD_GetBuffer ((void**) &inFilnam);
 	if (filnamLen <= 0) {
-		P86_Free (p86);
-		return 1;
+		CLEANUP_P86;
+		return RETVAL_MAIN;
 	}
 
-
-/*
-	if (P86_Read (p86, fileIn)) {
-		fclose (fileIn);
-		free (iobuf);
-		free (inFilnam);
-		P86_Free (p86);
-		return 2;
-	}
-*/
 
 	for (id = 0; id <= 255; ++id) {
 		sprintf (inFilnam, "TEST-%03u.RAW", id);
@@ -39,28 +55,16 @@ int main (void) {
 		if (fileIn[id] == NULL) continue;
 
 		if (!pmd_io_funcs.io_s (fileIn[id], SEEK_END, 0)) {
-			do {
-				if (fileIn[id] != NULL) fclose (fileIn[id]);
-			} while (id-- > 0);
-			free (inFilnam);
-			P86_Free (p86);
-			return 2;
+			CLEANUP_FILEINS;
+			return RETVAL_LIB;
 		}
 		if (!pmd_io_funcs.io_p (fileIn[id], &sampleLen)) {
-			do {
-				if (fileIn[id] != NULL) fclose (fileIn[id]);
-			} while (id-- > 0);
-			free (inFilnam);
-			P86_Free (p86);
-			return 2;
+			CLEANUP_FILEINS;
+			return RETVAL_LIB;
 		}
 		if (!pmd_io_funcs.io_s (fileIn[id], SEEK_SET, 0)) {
-			do {
-				if (fileIn[id] != NULL) fclose (fileIn[id]);
-			} while (id-- > 0);
-			free (inFilnam);
-			P86_Free (p86);
-			return 2;
+			CLEANUP_FILEINS;
+			return RETVAL_LIB;
 		}
 
 		P86_SetSample (p86, id, fileIn[id], 0, sampleLen);
@@ -68,33 +72,15 @@ int main (void) {
 
 	dest = fopen ("TEST__.P86", "wb");
 	if (dest == NULL) {
-		--id;
-		do {
-			if (fileIn[id] != NULL) fclose (fileIn[id]);
-		} while (id-- > 0);
-		free (inFilnam);
-		P86_Free (p86);
-		return 2;
+		CLEANUP_FILEINS_POST;
+		return RETVAL_LIB;
 	}
 
 	if (P86_Write (p86, dest)) {
-		fclose (dest);
-		--id;
-		do {
-			if (fileIn[id] != NULL) fclose (fileIn[id]);
-		} while (id-- > 0);
-		free (inFilnam);
-		P86_Free (p86);
-		return 2;
+		CLEANUP_DEST;
+		return RETVAL_LIB;
 	}
 
-	fclose (dest);
-	--id;
-	do {
-		if (fileIn[id] != NULL) fclose (fileIn[id]);
-	} while (id-- > 0);
-	free (inFilnam);
-	P86_Free (p86);
-
-	return 0;
+	CLEANUP_DEST;
+	return RETVAL_OK;
 }
