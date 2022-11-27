@@ -74,7 +74,7 @@ int main (void) {
 		sprintf (outFilnam, "TEST-%03u.RAW", id);
 		dest = fopen (outFilnam, "wb");
 		if (dest == NULL) {
-			perror("fopen() failed"); // works on dos w/ ow, mingw/msvc windows?
+			perror("fopen() failed"); /* works on dos w/ ow, mingw/msvc windows? */
 			printf ("Open %s error\n", outFilnam);
 			CLEANUP_FILEIN;
 			return RETVAL_MAIN;

@@ -16,7 +16,15 @@ if (MSVC)
 	add_definitions (/D_CRT_SECURE_NO_WARNINGS)
 elseif (${CMAKE_C_COMPILER_ID} MATCHES "GNU|\\.*Clang|\\.*LLVM")
 	# lots of warnings and all warnings as errors
-	add_compile_options (-Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -pedantic -Werror -pedantic-errors)
+	add_compile_options (
+		-Wall
+		-Wextra
+		-Wstrict-prototypes
+		-Wmissing-prototypes
+		-pedantic
+		-Werror
+		-pedantic-errors
+	)
 endif ()
 
 if (NOT CMAKE_BUILD_TYPE)
