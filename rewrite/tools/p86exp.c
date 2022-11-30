@@ -3,6 +3,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define EXENAME "p86exp"
+
+void help (void);
+
+void help (void) {
+	printf ("%s: Test functionality of P86 code by\n", EXENAME);
+	printf ("- loading a P86 file\n");
+	printf ("- exporting the parsed samples into new files based on a printf pattern\n");
+	printf ("\n");
+	printf ("Usage:\t%s in.p86 outpattern\n", EXENAME);
+}
+
 /*
 	0 - OK
 	1 - main error
@@ -32,7 +44,7 @@
 	fclose (dest);\
 	CLEANUP_FILEIN;
 
-int main (void) {
+int main (int argc, char**argv) {
 	unsigned short id;
 	char* outFilnam, * iobuf;
 	int filnamLen, iobufLen;
@@ -40,6 +52,12 @@ int main (void) {
 	int sampleRead;
 	FILE* fileIn, * dest;
 	p86_struct* p86 = P86_New();
+
+	if (argc != 3) {
+		help();
+		CLEANUP_P86;
+		return RETVAL_MAIN;
+	}
 
 	filnamLen = PMD_GetBuffer ((void**) &outFilnam);
 	if (filnamLen <= 0) {
@@ -55,15 +73,15 @@ int main (void) {
 		return RETVAL_MAIN;
 	}
 
-	fileIn = fopen ("TEST.P86", "rb");
+	fileIn = fopen (argv[1], "rb");
 	if (fileIn == NULL) {
-		printf ("Open TEST.P86 error\n");
+		printf ("Open %s (in) error\n", argv[1]);
 		CLEANUP_IOBUF;
 		return RETVAL_MAIN;
 	}
 
 	if (P86_Read (p86, fileIn)) {
-		printf ("Parse TEST.P86 error\n");
+		printf ("Parse %s (in) error\n", argv[1]);
 		CLEANUP_FILEIN;
 		return RETVAL_LIB;
 	}
@@ -71,11 +89,11 @@ int main (void) {
 	for (id = 0; id <= 255; ++id) {
 		if (p86->samples[id] == NULL) continue;
 
-		sprintf (outFilnam, "TEST-%03u.RAW", id);
+		sprintf (outFilnam, argv[2], id);
 		dest = fopen (outFilnam, "wb");
 		if (dest == NULL) {
 			perror("fopen() failed"); /* works on dos w/ ow, mingw/msvc windows? */
-			printf ("Open %s error\n", outFilnam);
+			printf ("Open %s (out) error\n", outFilnam);
 			CLEANUP_FILEIN;
 			return RETVAL_MAIN;
 		}
@@ -84,7 +102,7 @@ int main (void) {
 		do {
 			sampleRead = PMD_ReadBuffer (p86->samples[id]->src, sampleLen, iobuf, iobufLen);
 			if (sampleRead == -1) {
-				printf ("Read %s sample error\n", outFilnam);
+				printf ("Read %s (in) sample error\n", argv[1]);
 				ERROR_READ ("P86 partial sample (into buffer)",
 					(sampleLen > (unsigned long)iobufLen) ? (unsigned long)iobufLen : sampleLen
 				);
@@ -93,7 +111,7 @@ int main (void) {
 			};
 
 			WRITE_CHECK (iobuf, sizeof (char), sampleRead) {
-				printf ("Write %s sample error\n", outFilnam);
+				printf ("Write %s (out) sample error\n", outFilnam);
 				ERROR_WRITE ("P86 partial sample (from buffer)", sampleRead);
 				CLEANUP_DEST;
 				return RETVAL_LIB;
