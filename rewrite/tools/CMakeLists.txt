@@ -1,20 +1,11 @@
-add_executable (p86test p86test.c)
-target_link_libraries (p86test PRIVATE openpmd)
-target_include_directories (p86test PUBLIC ${INCLUDE_PATH})
-install (TARGETS p86test
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+macro (addTool name)
+	add_executable (${name} ${name}.c)
+	target_link_libraries (${name} PRIVATE openpmd)
+	install (TARGETS ${name}
+		RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+	)
+endmacro ()
 
-add_executable (p86exp p86exp.c)
-target_link_libraries (p86exp PRIVATE openpmd)
-target_include_directories (p86exp PUBLIC ${INCLUDE_PATH})
-install (TARGETS p86exp
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
-
-add_executable (p86imp p86imp.c)
-target_link_libraries (p86imp PRIVATE openpmd)
-target_include_directories (p86imp PUBLIC ${INCLUDE_PATH})
-install (TARGETS p86imp
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+addTool (p86test)
+addTool (p86exp)
+addTool (p86imp)

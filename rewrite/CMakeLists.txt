@@ -9,21 +9,41 @@ set (CMAKE_C_STANDARD 90)
 set (CMAKE_C_STANDARD_REQUIRED TRUE)
 set (CMAKE_C_EXTENSIONS OFF)
 
+function(mkCompilerOptions targetList)
+	if (${CMAKE_C_COMPILER_ID} MATCHES "MSVC|\\*Watcom")
+		set (switchChar "/")
+	else ()
+		set (switchChar "-")
+	endif ()
+
+	foreach (option ${ARGN})
+		list (APPEND ${targetList} "${switchChar}${option}")
+	endforeach ()
+
+	set (${targetList} ${${targetList}} PARENT_SCOPE)
+endfunction()
+
+set (OPENPMD_DEFINES)
+set (OPENPMD_CFLAGS)
+
 if (MSVC)
 	# warning level 4 and all warnings as errors
 	# add_compile_options (/W4 /WX)
 	# Shut up MSVC about its "better", non-portable functions
-	add_definitions (/D_CRT_SECURE_NO_WARNINGS)
+	# add_definitions (D_CRT_SECURE_NO_WARNINGS)
+	mkCompilerOptions (OPENPMD_DEFINES D_CRT_SECURE_NO_WARNINGS)
 elseif (${CMAKE_C_COMPILER_ID} MATCHES "GNU|\\.*Clang|\\.*LLVM")
 	# lots of warnings and all warnings as errors
-	add_compile_options (
-		-Wall
-		-Wextra
-		-Wstrict-prototypes
-		-Wmissing-prototypes
-		-pedantic
-		-Werror
-		-pedantic-errors
+	# add_compile_options (
+	mkCompilerOptions (OPENPMD_CFLAGS
+		Wall
+		Wextra
+		Wstrict-prototypes
+		Wmissing-prototypes
+		Wconversion
+		pedantic
+		Werror
+		pedantic-errors #prolly redundant
 	)
 endif ()
 
@@ -32,26 +52,13 @@ if (NOT CMAKE_BUILD_TYPE)
 endif ()
 string (TOUPPER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_UPPER)
 
-if (CMAKE_BUILD_TYPE_UPPER STREQUAL "DEBUG")
-	if (MSVC)
-		add_definitions (/DDEBUG)
-	else ()
-		add_definitions (-DDEBUG)
-	endif ()
+if (CMAKE_BUILD_TYPE_UPPER MATCHES "DEBUG|RELWITHDEBINFO")
+	mkCompilerOptions (OPENPMD_DEFINES DDEBUG)
 endif ()
 
-add_definitions (-DENABLE_TRAP)
-
-#if (CMAKE_SYSTEM_NAME STREQUAL "DOS" AND CMAKE_SYSTEM_PROCESSOR STREQUAL "I86")
-#	set (PREFER_LOWMEM TRUE)
-#else ()
-#	set (PREFER_LOWMEM FALSE)
-#endif ()
-#option (USE_LOWMEM
-#	"Use code that's better suited for low-memory environments"
-#	${PREFER_LOWMEM}
-#)
-#message (STATUS "USE_LOWMEM: ${USE_LOWMEM}")
+if (NOT CMAKE_SYSTEM_NAME STREQUAL "DOS")
+	mkCompilerOptions (OPENPMD_DEFINES DENABLE_TRAP)
+endif ()
 
 #if (USE_LOWMEM)
 #  add_definitions (-DUSE_LOWMEM)

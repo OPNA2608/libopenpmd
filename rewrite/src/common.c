@@ -1,88 +1,11 @@
 #include "common.h"
 
+#include "io.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
-
-/* Read count * size bytes from src to dest */
-static boolean ioRead (FILE* source, void* dest, unsigned int size, unsigned int count) {
-	size_t res = fread (dest, size, count, source);
-	if (res != count) return false;
-	/* TODO apply endianness correction or read byte-by-byte & reassemble */
-	return true;
-}
-
-/* Write count * size bytes from src to dest */
-static boolean ioWrite (const void* source, FILE* const dest, unsigned int size, unsigned int count) {
-	const void* realData;
-	if (false) {
-		/* TODO apply endianness correction or read byte-by-byte & reassemble */
-	} else {
-		realData = source;
-	}
-	return fwrite (realData, size, count, dest) == count;
-}
-
-/* Seek with mode to pos in src */
-static boolean ioSeek (FILE* source, int mode, unsigned int size) {
-	return fseek (source, size, mode) == 0;
-}
-
-/* Tell current position in src to pos */
-static boolean ioPos (FILE* source, unsigned int* pos) {
-	long ret = ftell (source);
-	if (ret == -1) return false;
-	*pos = (unsigned int) ret;
-	return true;
-}
-
-pmd_io pmd_io_funcs = {
-	ioRead,
-	ioWrite,
-	ioSeek,
-	ioPos
-};
-
-/*
- * Helper for allocating a utility buffer
- *
- * -1 - Failed to allocate a buffer
- * >0 - Size of buffer
- */
-long PMD_GetBuffer (void** dest) {
-	long buf_size = PMD_BUFFERSIZE;
-
-	while (buf_size > 0) {
-		ALLOC_CHECK (*dest, buf_size) {
-			buf_size /= 2;
-		} else {
-#ifdef DEBUG
-			printf ("Got buffer of size %ld\n", buf_size);
-#endif
-			break;
-		}
-	}
-	return buf_size != 0 ? buf_size : -1L;
-}
-
-/*
- * Helper for reading data from a FILE* into a buffer
- *
- * -1 - dataLeft bogus (<=0)
- * -2 - Incomplete read
- * >0 - Count of read bytes
- */
-long PMD_ReadBuffer (FILE* src, long dataLeft, void* dest, unsigned int destSize) {
-	unsigned long readAmount = dataLeft;
-	if (readAmount < 1) return -1;
-	if (dataLeft > destSize) readAmount = destSize;
-
-	READ_CHECK (dest, sizeof (char), readAmount) return -2;
-
-	return readAmount;
-}
-
 
 /* Buffer for error feedback & functions for interacting with it */
 
@@ -104,6 +27,50 @@ static int pmd_init_error (void) {
 }
 
 /*
+ * Helper for allocating a utility buffer
+ *
+ * -1 - Failed to allocate a buffer
+ * >0 - Size of buffer
+ */
+long PMD_GetBuffer (void** dest) {
+	long buf_size = PMD_BUFFERSIZE;
+	TRACE (("PMD_GetBuffer", "Asked to allocate a buffer, starting at %ld", buf_size));
+
+	while (buf_size > 0) {
+		TRACE (("PMD_GetBuffer", "Trying to allocate a buffer of size %ld...", buf_size));
+		ALLOC_CHECK (*dest, (unsigned  long)buf_size) {
+			buf_size /= 2;
+		} else {
+			TRACE (("PMD_GetBuffer", "Got buffer of size %ld!", buf_size));
+			break;
+		}
+	}
+	if (buf_size == 0) TRACE (("PMD_GetBuffer", "Failed to get a buffer."));
+
+	return buf_size != 0 ? buf_size : -1L;
+}
+
+/*
+ * Helper for reading data from a FILE* into a buffer
+ *
+ * -1 - dataLeft bogus (<=0)
+ * -2 - Incomplete read
+ * >0 - Count of read bytes
+ */
+long PMD_ReadBuffer (FILE* src, unsigned long dataLeft, void* dest, unsigned int destSize) {
+	/* TODO truncation potential */
+	unsigned int readAmount = (unsigned int)dataLeft;
+	if (readAmount == 0) return -1;
+	if (dataLeft > destSize) readAmount = destSize;
+
+	TRACE (("PMD_ReadBuffer", "Reading %uB into buffer", readAmount));
+	READ_CHECK (dest, sizeof (char), readAmount) return -2;
+
+	return readAmount;
+}
+
+
+/*
  * Writes formatted string to error buffer
  */
 void PMD_SetError (const char* errorMsg, ...) {
@@ -111,11 +78,12 @@ void PMD_SetError (const char* errorMsg, ...) {
 	va_start (fArgs, errorMsg);
 
 	if (pmd_error == NULL && pmd_init_error() != 0) {
-		printf ("Error init failed\n");
+		TRACE (("PMD_SetError", "Error init failed"));
 		va_end (fArgs);
 		return;
 	}
 	vsprintf (pmd_error, errorMsg, fArgs);
+	TRACE (("PMD_SetError", pmd_error));
 	va_end (fArgs);
 }
 
@@ -131,4 +99,19 @@ const char* PMD_GetError (void) {
  */
 void PMD_PrintError (void) {
 	printf ("%s\n", pmd_error);
+}
+
+/*
+ * Prints a message for debugging
+ */
+void dbg_printf (const char* dbgSrc, const char* dbgMsg, ...) {
+	va_list fArgs;
+	va_start (fArgs, dbgMsg);
+	/*fprintf (stderr, "[%s] ", dbgSrc);
+	vfprintf (stderr, dbgMsg, fArgs);
+	fprintf (stderr, "\n");*/
+	fprintf (stdout, "[%s] ", dbgSrc);
+	vfprintf (stdout, dbgMsg, fArgs);
+	fprintf (stdout, "\n");
+	va_end (fArgs);
 }

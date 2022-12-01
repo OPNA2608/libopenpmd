@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/* Set starting buffer size (dynamic testing will start with this size) */
+#define PMD_BUFFERSIZE 1024
+
 /* Raise SIGTRAP on errors, not supported on DOS (and prolly others) */
 #ifdef ENABLE_TRAP
 	#include <signal.h>
@@ -12,38 +15,16 @@
 	#define RAISE_TRAP
 #endif
 
-/* Enable macro for dirty unused marking, mutes some warnings */
+/* Macro for dirty unused marking, mutes some warnings */
 #ifdef DEBUG
 	#define UNUSED(x) (void)(x);
 #else
 	#define UNUSED(x)
 #endif
 
-/* Set starting buffer size (dynamic testing will start with this size) */
-#define PMD_BUFFERSIZE 1024
-
 
 /* C89 bools */
 typedef enum { false, true } boolean;
-
-/* I/O handlers */
-/* Read count * size bytes from src to dest */
-typedef boolean (*pmd_io_read) (FILE* src, void* dest, unsigned int size, unsigned int count);
-/* Write count * size bytes from src to dest */
-typedef boolean (*pmd_io_write) (const void* src, FILE* const dest, unsigned int size, unsigned int count);
-/* Seek with mode to pos in src */
-typedef boolean (*pmd_io_seek) (FILE* src, int mode, unsigned int loc);
-/* Tell current position in src to pos */
-typedef boolean (*pmd_io_pos) (FILE* src, unsigned int* pos);
-
-typedef struct {
-	pmd_io_read io_r;
-	pmd_io_write io_w;
-	pmd_io_seek io_s;
-	pmd_io_pos io_p;
-} pmd_io;
-
-extern pmd_io pmd_io_funcs;
 
 /*
  * Helper for allocating a utility buffer
@@ -60,7 +41,7 @@ long PMD_GetBuffer (void** dest);
  * -2 - Incomplete read
  * >0 - Count of read bytes
  */
-long PMD_ReadBuffer (FILE* src, long dataLeft, void* dest, unsigned int destSize);
+long PMD_ReadBuffer (FILE* src, unsigned long dataLeft, void* dest, unsigned int destSize);
 
 /*
  * Writes formatted string to error buffer
@@ -77,40 +58,29 @@ const char* PMD_GetError (void);
  */
 void PMD_PrintError (void);
 
+/*
+ * Prints a message for debugging
+ */
+void dbg_printf (const char* dbgSrc, const char* dbgMsg, ...);
+
+
+/* Allocate & check for success */
 #define ALLOC_CHECK(var, size)\
 	var = calloc (size, sizeof (char));\
 	if (var == NULL)
 
-/* requires src */
-#define READ_CHECK(var, elemsize, elemcount)\
-	if (!pmd_io_funcs.io_r (src, var, elemsize, elemcount))
-
-/* requires dest */
-#define WRITE_CHECK(data, elemsize, elemcount)\
-	if (!pmd_io_funcs.io_w (data, dest, elemsize, elemcount))
-
-/* requires src */
-#define SEEK_CHECK(mode, loc)\
-	if (!pmd_io_funcs.io_s (src, mode, loc))
-
+/* Signal allocation error */
 #define ERROR_ALLOC(name, size)\
 	PMD_SetError ("%s alloc (%dB) error", name, size);\
 	PMD_PrintError();\
 	RAISE_TRAP;
 
-#define ERROR_READ(name, size)\
-	PMD_SetError ("%s read (%dB) error", name, size);\
-	PMD_PrintError();\
-	RAISE_TRAP;
-
-#define ERROR_WRITE(name, size)\
-	PMD_SetError ("%s write (%dB) error", name, size);\
-	PMD_PrintError();\
-	RAISE_TRAP;
-
-#define ERROR_SEEK(name, mode, pos)\
-	PMD_SetError ("%s seek (mode %d, pos %d) error", name, mode, pos);\
-	PMD_PrintError();\
-	RAISE_TRAP;
+/* Macro for debug-only messages with varargs */
+#ifdef DEBUG
+	#define DO_MSG true
+#else
+	#define DO_MSG false
+#endif
+#define TRACE(x) do { if (DO_MSG) dbg_printf x; } while (0)
 
 #endif /* PMD_COMMON_H */

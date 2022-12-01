@@ -1,5 +1,7 @@
 #include "p86.h"
 #include "common.h"
+#include "io.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -49,8 +51,8 @@ void help (void) {
 int main (int argc, char** argv) {
 	unsigned short id;
 	char* inFilnam;
-	int filnamLen;
-	unsigned int sampleLen;
+	long filnamLen;
+	unsigned long int sampleLen;
 	FILE* fileIn[256], * dest;
 	p86_struct* p86 = P86_New();
 
@@ -73,23 +75,24 @@ int main (int argc, char** argv) {
 		fileIn[id] = fopen (inFilnam, "rb");
 		if (fileIn[id] == NULL) continue;
 
-		if (!pmd_io_funcs.io_s (fileIn[id], SEEK_END, 0)) {
+		if (!pmd_io_file.io_s (fileIn[id], SEEK_END, 0)) {
 			printf ("Seek %s (in) end error\n", inFilnam);
 			CLEANUP_FILEINS;
 			return RETVAL_LIB;
 		}
-		if (!pmd_io_funcs.io_p (fileIn[id], &sampleLen)) {
+		if (!pmd_io_file.io_p (fileIn[id], &sampleLen)) {
 			printf ("Pos %s (in) error\n", inFilnam);
 			CLEANUP_FILEINS;
 			return RETVAL_LIB;
 		}
-		if (!pmd_io_funcs.io_s (fileIn[id], SEEK_SET, 0)) {
+		if (!pmd_io_file.io_s (fileIn[id], SEEK_SET, 0)) {
 			printf ("Seek %s (in) start error\n", inFilnam);
 			CLEANUP_FILEINS;
 			return RETVAL_LIB;
 		}
+		TRACE (("p86imp", "Sample is of size %lu", sampleLen));
 
-		P86_SetSample (p86, id, fileIn[id], 0, sampleLen);
+		P86_SetSample (p86, (unsigned char)id, fileIn[id], 0, sampleLen);
 	}
 
 	dest = fopen (argv[2], "wb");

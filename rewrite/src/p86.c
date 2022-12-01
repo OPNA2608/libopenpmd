@@ -1,6 +1,7 @@
 #include "p86.h"
 
 #include "common.h"
+#include "io.h"
 
 /* calloc & free */
 #include <stdlib.h>
@@ -44,7 +45,7 @@ void P86_Free (p86_struct* p86) {
 
 	for (i = 0; i <= 255; ++i) {
 		if (p86->samples[i] != NULL) {
-			P86_UnsetSample (p86, i);
+			P86_UnsetSample (p86, (unsigned char)i);
 		}
 	}
 	free (p86);
@@ -79,7 +80,9 @@ int P86_Read (p86_struct* p86, FILE* src) {
 	if (memcmp (P86_MAGIC, (char*)buffer, 12) != 0) {
 		CLEANUP_BUFFER;
 		PMD_SetError ("P86 magic mismatch (%s vs %s) error", P86_MAGIC, (char*)buffer);
+		PMD_PrintError();
 		RAISE_TRAP;
+		CLEANUP_BUFFER;
 		return 1;
 	};
 	CLEANUP_BUFFER;
@@ -103,7 +106,7 @@ int P86_Read (p86_struct* p86, FILE* src) {
 			return 4;
 		};
 		if (sample_length != 0) {
-			P86_SetSample (p86, i, src, sample_start, sample_length);
+			P86_SetSample (p86, (unsigned char)i, src, sample_start, sample_length);
 		}
 	}
 
@@ -127,19 +130,19 @@ int P86_Read (p86_struct* p86, FILE* src) {
  * 4 - source seek/read error
  */
 int P86_Write (p86_struct* p86, FILE* dest) {
-	unsigned long length;
-  long length_read, buf_size, sample_start, sample_unset;
+	unsigned long length, sample_start, sample_unset;
+  long length_read, buf_size;
 	unsigned int i;
 	FILE* src;
 	char* buffer;
+
+	sample_unset = 0;
 
 	buf_size = PMD_GetBuffer ((void**)&buffer);
 	if (buf_size == -1) {
 		ERROR_ALLOC ("P86 I/O buffer", PMD_BUFFERSIZE);
 		return 1;
 	};
-
-	sample_unset = 0;
 
 	length = P86_HEADERLENGTH;
 	for (i = 0; i <= 255; ++i) {
@@ -181,15 +184,15 @@ int P86_Write (p86_struct* p86, FILE* dest) {
 			};
 			length = p86->samples[i]->length;
 			do {
-				length_read = PMD_ReadBuffer (src, length, buffer, buf_size);
+				length_read = PMD_ReadBuffer (src, length, buffer, (unsigned int)buf_size);
 				if (length_read == -1) {
 					CLEANUP_BUFFER;
 					ERROR_READ ("P86 partial sample (into buffer)", (length > (unsigned long)buf_size) ? (unsigned long)buf_size : length);
 					return 4;
 				};
 
-				WRAP_WRITE (buffer, "P86 partial sample (from buffer)", sizeof (char), length_read);
-				length -= length_read;
+				WRAP_WRITE (buffer, "P86 partial sample (from buffer)", sizeof (char), (unsigned int)length_read);
+				length -= (unsigned int)length_read;
 			} while (length != 0);
 		}
 	}
@@ -204,24 +207,34 @@ int P86_Write (p86_struct* p86, FILE* dest) {
  * Sets a sample entry in a P86 struct
  *
  * 0 - OK
- * 1 - invalid p86_struct
- * 2 - sample alloc failure
+ * 1 - invalid (NULL) p86_struct
+ * 2 - length > P86_LENGTHMAX
+ * 3 - sample alloc failure
  */
 int P86_SetSample (p86_struct* p86, unsigned char id, FILE* src, unsigned long pos, unsigned long length) {
 	p86_sample* newSample;
 
-	if (p86 == NULL) return 1;
+	TRACE (("P86_SetSample", "Setting sample %3u to pos %lu, length %lu", id, pos, length));
+	if (p86 == NULL) {
+		PMD_SetError ("Invalid (NULL) p86 struct");
+		return 1;
+	}
+	if (length > P86_LENGTHMAX) {
+		PMD_SetError ("Sample length %luB exceeds maximum P86 sample size (%luB)", length,  P86_LENGTHMAX);
+		return 2;
+	}
 
 	ALLOC_CHECK (newSample, sizeof (p86_sample)) {
 		ERROR_ALLOC ("P86 sample struct", sizeof (p86_sample));
-		return 2;
+		return 3;
 	}
 	newSample->src = src;
 	newSample->pos = pos;
 	newSample->length = length;
 
 	if (p86->samples[id] != NULL) {
-		free (p86->samples[id]);
+		TRACE (("P86_SetSample", "Sample %3u is already set, unsetting existing one first", id));
+		P86_UnsetSample (p86, id);
 	}
 	p86->samples[id] = newSample;
 
@@ -232,11 +245,19 @@ int P86_SetSample (p86_struct* p86, unsigned char id, FILE* src, unsigned long p
  * Unsets a sample entry in a P86 struct
  *
  * 0 - OK
- * 1 - invalid p86_struct
+ * 1 - invalid (NULL) p86_struct
  */
 int P86_UnsetSample (p86_struct* p86, unsigned char id) {
-	if (p86 == NULL) return 1;
-	if (p86->samples[id] == NULL) return 0;
+	TRACE (("P86_UnsetSample", "Unsetting sample %3u", id));
+
+	if (p86 == NULL) {
+		PMD_SetError ("Invalid (NULL) p86 struct");
+		return 1;
+	}
+	if (p86->samples[id] == NULL) {
+		TRACE (("P86_UnsetSample", "Sample %3u already not set, ignoring call", id));
+		return 0;
+	}
 
 	free (p86->samples[id]);
 	p86->samples[id] = NULL;
