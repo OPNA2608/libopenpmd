@@ -59,15 +59,10 @@ jobs:
         mkdir test
         cd test
 
-        loadtest ../examples/P86/RC1.P86
-        mv TEST_MEM.P86 LOADTEST_MEM.P86
-        mv TEST_FIL.P86 LOADTEST_FIL.P86
-
-        p86extract LOADTEST_MEM.P86
-        p86create TEST_*.RAW
-        mv TEST.P86 P86CREATE.P86
-
         print_hash ../examples/P86/RC1.P86
-        print_hash LOADTEST_MEM.P86
-        print_hash LOADTEST_FIL.P86
-        print_hash P86CREATE.P86
+        p86load ../examples/P86/RC1.P86 LOADTEST.P86
+        print_hash ../examples/P86/RC1.P86
+
+        p86exp ../examples/P86/RC1.P86 'EXP%03u.RAW'
+        p86imp 'EXP%03u.RAW' IMEXTEST.P86
+        print_hash IMEXTEST.P86
