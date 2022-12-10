@@ -60,7 +60,7 @@ jobs:
         cd test
 
         print_hash ../examples/P86/RC1.P86
-        p86load ../examples/P86/RC1.P86 LOADTEST.P86
+        p86test ../examples/P86/RC1.P86 LOADTEST.P86
         print_hash ../examples/P86/RC1.P86
 
         p86exp ../examples/P86/RC1.P86 'EXP%03u.RAW'
