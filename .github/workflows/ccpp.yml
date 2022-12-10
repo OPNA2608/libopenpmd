@@ -61,7 +61,7 @@ jobs:
 
         print_hash ../examples/P86/RC1.P86
         p86test ../examples/P86/RC1.P86 LOADTEST.P86
-        print_hash ../examples/P86/RC1.P86
+        print_hash LOADTEST.P86
 
         p86exp ../examples/P86/RC1.P86 'EXP%03u.RAW'
         p86imp 'EXP%03u.RAW' IMEXTEST.P86
