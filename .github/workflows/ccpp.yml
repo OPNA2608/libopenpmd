@@ -123,14 +123,14 @@ jobs:
           function run_dos() {
             extender=''
             if [ '${{ matrix.config.arch }}' == 'X86' ]; then
-              extender='C:\INSTALL\BIN\DOS4GW.EXE '
+              extender='C:\INSTALL\BIN\DOS4GW.EXE'
             fi
             logfile="$(basename $1 .EXE)"'.LOG'
             SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy dosbox \
               -c 'MOUNT C ..' \
               -c 'C:' \
               -c 'CD TEST' \
-              -c "${extender}"'C:\INSTALL\BIN\'"$*"' > '"${logfile}" \
+              -c "${extender}"' C:\INSTALL\BIN\'"$(printf '%q ' "$@")"' > '"${logfile}" \
               -c 'EXIT'
             cat "${logfile}"
           }
