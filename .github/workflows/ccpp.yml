@@ -32,17 +32,17 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Setup Nix
-      if: matrix.config.platform == dos
+      if: matrix.config.platform == 'dos'
       uses: cachix/install-nix-action@v15
       with:
         nix_path: nixpkgs=channel:nixos-unstable
 
     - name: Configure
-      if: matrix.config.platform != dos
+      if: matrix.config.platform != 'dos'
       run: cmake -B ${PWD}/build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=${PWD}/install
 
     - name: Configure [DOS]
-      if: matrix.config.platform == dos
+      if: matrix.config.platform == 'dos'
       uses: workflow/nix-shell-action@v3
       with:
         packages: cmake,open-watcom-v2
@@ -54,11 +54,11 @@ jobs:
             -G "Watcom WMake" -DCMAKE_SYSTEM_NAME=DOS -DCMAKE_SYSTEM_PROCESSOR=${{ matrix.config.arch }}
 
     - name: Build
-      if: matrix.config.platform != dos
+      if: matrix.config.platform != 'dos'
       run: cmake --build ${PWD}/build --config Debug --parallel 2
 
     - name: Build [DOS]
-      if: matrix.config.platform == dos
+      if: matrix.config.platform == 'dos'
       uses: workflow/nix-shell-action@v3
       with:
         packages: cmake,open-watcom-v2
@@ -66,11 +66,11 @@ jobs:
           cmake --build ${PWD}/build --config Debug
 
     - name: Install
-      if: matrix.config.platform != dos
+      if: matrix.config.platform != 'dos'
       run: cmake --install ${PWD}/build --config Debug
 
     - name: Install [DOS]
-      if: matrix.config.platform == dos
+      if: matrix.config.platform == 'dos'
       uses: workflow/nix-shell-action@v3
       with:
         packages: cmake,open-watcom-v2
@@ -82,7 +82,7 @@ jobs:
           fi
 
     - name: Test
-      if: matrix.config.platform != dos
+      if: matrix.config.platform != 'dos'
       run: |
         export PATH=${PWD}/install/bin:${PATH}
         if [ '${{ matrix.config.name }}' == 'Windows' ]; then
@@ -113,7 +113,7 @@ jobs:
         print_hash IMEXTEST.P86
 
     - name: Test [DOS]
-      if: matrix.config.platform == dos
+      if: matrix.config.platform == 'dos'
       uses: workflow/nix-shell-action@v3
       with:
         packages: dosbox
