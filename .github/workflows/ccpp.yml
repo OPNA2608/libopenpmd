@@ -80,7 +80,7 @@ jobs:
           cmake --install ${PWD}/build --config Debug
 
           if [ '${{ matrix.config.arch }}' == 'X86' ]; then
-            cp -v $(dirname $(which wcl386))/../binw/dos4gw.exe ./
+            cp -v $(realpath $(dirname $(which wcl386))/../binw/dos4gw.exe) $(realpath ./install/bin/DOS4GW.EXE)
           fi
 
     - name: Test
@@ -146,8 +146,8 @@ jobs:
 
           run_dos P86TEST.EXE ../EXAMPLES/P86/RC1.P86 LOADTEST.P86
 
-          run_dos P86EXP.EXE ../examples/P86/RC1.P86 EXP%03u.RAW
-          run_dos P86IMP.EXE EXP%03u.RAW IMEXTEST.P86
+          run_dos P86EXP.EXE ../examples/P86/RC1.P86 'EXP%03u.RAW'
+          run_dos P86IMP.EXE 'EXP%03u.RAW' IMEXTEST.P86
 
           print_hash ../examples/P86/RC1.P86
           print_hash LOADTEST.P86
