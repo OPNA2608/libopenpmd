@@ -123,7 +123,7 @@ jobs:
             if [ '${{ matrix.config.arch }}' == 'X86' ]; then
               extender='C:\INSTALL\BIN\DOS4GW.EXE '
             fi
-            logfile='TEST\'"$(basename$1 .EXE)"'.LOG'
+            logfile='TEST\'"$(basename $1 .EXE)"'.LOG'
             SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy dosbox \
               -c 'MOUNT C .' \
               -c 'C:' \
