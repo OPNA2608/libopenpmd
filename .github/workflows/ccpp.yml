@@ -146,8 +146,9 @@ jobs:
 
           run_dos P86TEST.EXE ../EXAMPLES/P86/RC1.P86 LOADTEST.P86
 
-          run_dos P86EXP.EXE ../examples/P86/RC1.P86 'EXP%03u.RAW'
-          run_dos P86IMP.EXE 'EXP%03u.RAW' IMEXTEST.P86
+          # Double % to escape argument substitution
+          run_dos P86EXP.EXE ../examples/P86/RC1.P86 'EXP%%03u.RAW'
+          run_dos P86IMP.EXE 'EXP%%03u.RAW' IMEXTEST.P86
 
           print_hash ../examples/P86/RC1.P86
           print_hash LOADTEST.P86
