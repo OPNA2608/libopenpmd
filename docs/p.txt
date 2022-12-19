@@ -1,0 +1,23 @@
+=======================================
+                 Header
+=======================================
+
+0x0000 - 0x1024  256 * {
+	Sample start (uint32_t)
+    0x00000000 - unused
+}
+
+
+=======================================
+                  Body
+=======================================
+
+Stream of Sample Data {
+
+  MSM6258 ADPCM encoding
+    nibble-swapped VOX / Dialogic ADPCM
+  Mono
+  Sample rate?
+    16000Hz seems fine
+
+}
