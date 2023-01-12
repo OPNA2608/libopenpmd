@@ -39,9 +39,16 @@ for every set sample from header {
 
   Stream of Sample Data {
 
-    Signed 8-Bit
+    RF5C68 encoding (refer to manual, section "Example of waveform data format")
+      - 8-bit
+      - 0x00        -> (unused)
+      - 0x01 - 0x7F -> -1 - -127 (negative amplitude peak)
+      - 0x80        ->  0 (middle point)
+      - 0x81 - 0xFE ->  1 -  127 (positive amplitude peak)
+      - 0xFF        ->  ("loop stop data": jump to loop start point)
     Mono
     Sample rate?
+      - the usual 16000Hz seems close enough
 
   }
 }
