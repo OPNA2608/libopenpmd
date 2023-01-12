@@ -20,6 +20,8 @@ jobs:
         - { name: 'Windows', os: windows-latest }
         - { name: 'macOS', os: macos-latest }
         - { name: 'Ubuntu', os: ubuntu-latest }
+        - { name: 'DOS 32-bit', os: ubuntu-latest, platform: dos, arch: X86 }
+        - { name: 'DOS 16-bit', os: ubuntu-latest, platform: dos, arch: I86 }
       fail-fast: false
 
     name: ${{ matrix.config.name }}
@@ -29,16 +31,60 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
+    - name: Setup Nix
+      if: matrix.config.platform == 'dos'
+      uses: cachix/install-nix-action@v15
+      with:
+        nix_path: nixpkgs=channel:nixos-unstable
+        extra_nix_config: |
+          access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+
     - name: Configure
-      run:  cmake -B ${PWD}/build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=${PWD}/install
+      if: matrix.config.platform != 'dos'
+      run: cmake -B ${PWD}/build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=${PWD}/install
+
+    - name: Configure [DOS]
+      if: matrix.config.platform == 'dos'
+      uses: workflow/nix-shell-action@v3
+      with:
+        packages: cmake,open-watcom-v2
+        script: |
+          unset CC
+          unset CXX
+
+          cmake -B ${PWD}/build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=${PWD}/install \
+            -G "Watcom WMake" -DCMAKE_SYSTEM_NAME=DOS -DCMAKE_SYSTEM_PROCESSOR=${{ matrix.config.arch }}
 
     - name: Build
-      run:  cmake --build ${PWD}/build --config Debug --parallel 2
+      if: matrix.config.platform != 'dos'
+      run: cmake --build ${PWD}/build --config Debug --parallel 2
+
+    - name: Build [DOS]
+      if: matrix.config.platform == 'dos'
+      uses: workflow/nix-shell-action@v3
+      with:
+        packages: cmake,open-watcom-v2
+        script: |
+          cmake --build ${PWD}/build --config Debug
 
     - name: Install
+      if: matrix.config.platform != 'dos'
       run: cmake --install ${PWD}/build --config Debug
 
+    - name: Install [DOS]
+      if: matrix.config.platform == 'dos'
+      uses: workflow/nix-shell-action@v3
+      with:
+        packages: cmake,open-watcom-v2
+        script: |
+          cmake --install ${PWD}/build --config Debug
+
+          if [ '${{ matrix.config.arch }}' == 'X86' ]; then
+            cp -v $(realpath $(dirname $(which wcl386))/../binw/dos4gw.exe) $(realpath ./install/bin/DOS4GW.EXE)
+          fi
+
     - name: Test
+      if: matrix.config.platform != 'dos'
       run: |
         export PATH=${PWD}/install/bin:${PATH}
         if [ '${{ matrix.config.name }}' == 'Windows' ]; then
@@ -59,15 +105,51 @@ jobs:
         mkdir test
         cd test
 
-        loadtest ../examples/P86/RC1.P86
-        mv TEST_MEM.P86 LOADTEST_MEM.P86
-        mv TEST_FIL.P86 LOADTEST_FIL.P86
+        p86test ../examples/P86/RC1.P86 LOADTEST.P86
 
-        p86extract LOADTEST_MEM.P86
-        p86create TEST_*.RAW
-        mv TEST.P86 P86CREATE.P86
+        p86exp ../examples/P86/RC1.P86 'EXP%03u.RAW'
+        p86imp 'EXP%03u.RAW' IMEXTEST.P86
 
         print_hash ../examples/P86/RC1.P86
-        print_hash LOADTEST_MEM.P86
-        print_hash LOADTEST_FIL.P86
-        print_hash P86CREATE.P86
+        print_hash LOADTEST.P86
+        print_hash IMEXTEST.P86
+
+    - name: Test [DOS]
+      if: matrix.config.platform == 'dos'
+      uses: workflow/nix-shell-action@v3
+      with:
+        packages: dosbox
+        script: |
+          function run_dos() {
+            extender=''
+            if [ '${{ matrix.config.arch }}' == 'X86' ]; then
+              extender='C:\INSTALL\BIN\DOS4GW.EXE'
+            fi
+            logfile="$(basename $1 .EXE)"'.LOG'
+            SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy dosbox \
+              -c 'MOUNT C ..' \
+              -c 'C:' \
+              -c 'CD TEST' \
+              -c "${extender}"' C:\INSTALL\BIN\'"$(printf '%q ' "$@")"' > '"${logfile}" \
+              -c 'EXIT'
+            cat "${logfile}"
+          }
+          export -f run_dos
+
+          function print_hash() {
+            sha256sum "$1"
+          }
+          export -f print_hash
+
+          mkdir test
+          cd test
+
+          run_dos P86TEST.EXE ../EXAMPLES/P86/RC1.P86 LOADTEST.P86
+
+          # Double % to escape argument substitution
+          run_dos P86EXP.EXE ../examples/P86/RC1.P86 'EXP%%03u.RAW'
+          run_dos P86IMP.EXE 'EXP%%03u.RAW' IMEXTEST.P86
+
+          print_hash ../examples/P86/RC1.P86
+          print_hash LOADTEST.P86
+          print_hash IMEXTEST.P86

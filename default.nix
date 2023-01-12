@@ -14,10 +14,10 @@ stdenv.mkDerivation rec {
   pname = "libopenpmd";
   version = "0.0.0-local";
 
-  src = ./.;
+  src = lib.cleanSource ./.;
 
   postUnpack = ''
-    rm -rf $sourceRoot/{.git,build}/
+    rm -rf $sourceRoot/build
   '';
 
   nativeBuildInputs = [ cmake toilet valgrind ];
@@ -51,20 +51,19 @@ stdenv.mkDerivation rec {
     }
 
     print LOADTEST
-    run_test ./tools/loadtest ../examples/P86/RC1.P86
+    run_test ./tools/p86test ../examples/P86/RC1.P86 LOADTEST.P86
 
-    print COMPARING ORIGINAL AGAINST EXPORT TESTS
-    compare_two_hashes ../examples/P86/RC1.P86 TEST_MEM.P86
-    compare_two_hashes ../examples/P86/RC1.P86 TEST_FIL.P86
+    print COMPARING ORIGINAL AGAINST EXPORT TEST
+    compare_two_hashes ../examples/P86/RC1.P86 LOADTEST.P86
 
-    print P86EXTRACT
-    run_test ./tools/p86extract TEST_MEM.P86
+    print P86EXPORT
+    run_test ./tools/p86exp ../examples/P86/RC1.P86 'EXP%03u.RAW'
 
-    print P86CREATE
-    run_test ./tools/p86create TEST_***.RAW
+    print P86IMPORT
+    run_test ./tools/p86imp 'EXP%03u.RAW' IMEXTEST.P86
 
     # print COMPARING HASHES
-    # compare_two_hashes TEST_MEM.P86 TEST.P86
+    compare_two_hashes ../examples/P86/RC1.P86 IMEXTEST.P86
   '';
 }
 
