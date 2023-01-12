@@ -15,12 +15,11 @@
 	#define RAISE_TRAP
 #endif
 
-/* Macro for dirty unused marking, mutes some warnings */
-#ifdef DEBUG
-	#define UNUSED(x) (void)(x);
-#else
-	#define UNUSED(x)
-#endif
+/*
+ * Macro for marking variables andparameters unused, mutes some warnings
+ * Please use sparingly!
+ */
+#define UNUSED(x) (void)(x);
 
 
 /* C89 bools */
